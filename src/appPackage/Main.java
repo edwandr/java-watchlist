@@ -14,8 +14,12 @@ public class Main {
 	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
 	
 	public static void main(String[] args) {
-		TVShow simpsons = new TVShow(Integer.parseInt("456"));
+		TVShow simpsons = new TVShow(456);
 		System.out.println(simpsons.toString());
+		
+		TVShow got = new TVShow(1399);
+		System.out.println(got.toString());
+		
 	}
  
 	public static JSONObject getJSONAtURL(String myURL) {
@@ -26,7 +30,8 @@ public class Main {
 			URL url = new URL(myURL);
 			urlConn = url.openConnection();
 			if (urlConn != null)
-				urlConn.setReadTimeout(60 * 1000);
+				//Timeout at 5 seconds
+				urlConn.setReadTimeout(5 * 1000);
 			if (urlConn != null && urlConn.getInputStream() != null) {
 				in = new InputStreamReader(urlConn.getInputStream(), Charset.defaultCharset());
 				BufferedReader bufferedReader = new BufferedReader(in);
@@ -40,9 +45,12 @@ public class Main {
 			}
 			in.close();
 		} catch (Exception e) {
-			throw new RuntimeException("Exception while calling URL:" + myURL, e);
+			
 		}
  
 		return new JSONObject(sb.toString());
 	}
+	
+	
+	
 }
