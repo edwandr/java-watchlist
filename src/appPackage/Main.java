@@ -1,23 +1,24 @@
+package appPackage;
 
-import org.json.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
+import org.json.JSONObject;
+
 
 public class Main {
+	
+	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
+	
 	public static void main(String[] args) {
-		String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
-		String url = "https://api.themoviedb.org/3/movie/286217?api_key="+apiKey;
-		JSONObject json = new JSONObject(callURL(url));
-		
-		System.out.println(json.toString());
-		
+		TVShow simpsons = new TVShow(Integer.parseInt("456"));
+		System.out.println(simpsons.toString());
 	}
  
-	public static String callURL(String myURL) {
+	public static JSONObject getJSONAtURL(String myURL) {
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
 		InputStreamReader in = null;
@@ -42,6 +43,6 @@ public class Main {
 			throw new RuntimeException("Exception while calling URL:" + myURL, e);
 		}
  
-		return sb.toString();
+		return new JSONObject(sb.toString());
 	}
 }
