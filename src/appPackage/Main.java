@@ -17,13 +17,13 @@ public class Main {
 	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
 	
 	public static void main(String[] args) {
-		ArrayList<TVShow> list = TVShow.getPopularTVShows();
+		ArrayList<TVShow> list = TVShow.searchTVShows("new");
 		Iterator<TVShow> it = list.iterator();
-		while(it.hasNext()){
-			System.out.println(it.next().toString());
-		}
+		
+		while(it.hasNext()) System.out.println(it.next().toString());
+		
 	}
- 
+	
 	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
