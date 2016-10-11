@@ -13,7 +13,6 @@ import org.json.JSONObject;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -37,23 +36,25 @@ public class Main extends Application{
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
 
-        BorderPane application = new BorderPane();
+        UIApplication application = new UIApplication();
         root.getChildren().add(application);
-
-        UISearchBar searchbar = new UISearchBar();
-        application.setTop(searchbar);
 
         UIMenu menu = new UIMenu();
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
-
         UIListPane listPane = new UIListPane(tvshows);
-
         application.setCenter(listPane);
+        
+        UISearchButton search = new UISearchButton("Search");
+        search.addObserver(application);
+        UISearchBar searchbar = new UISearchBar(search);
+        application.setTop(searchbar);
 
         primaryStage.setScene(scene);
         primaryStage.show();
+        
+        
 	}
 	
 	public static JSONObject getJSONAtURL(String myURL) throws JSONException {

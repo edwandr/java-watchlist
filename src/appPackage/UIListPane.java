@@ -34,7 +34,7 @@ public class UIListPane extends ScrollPane {
 	    list.setPrefSize(840, 600);
 	    
 	    this.setFitToWidth(true);
-        this.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+        this.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         this.setContent(list);
 	}
 }
