@@ -29,13 +29,12 @@ public class TVShow {
 	private LocalDate nextAiringTime;
 	
 	public TVShow(Integer id){
+		
 		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"?api_key="+Main.apiKey;
 		JSONObject json;
 		try{
 			json = Main.getJSONAtURL(url);
-		}catch(JSONException e){
-			return;
-		}
+		}catch(JSONException e){return;}
 		
 		String defaultString = "N/A";
 		this.name = json.optString("name", defaultString);
@@ -120,7 +119,9 @@ public class TVShow {
 						this.nextAiringTime=LocalDate.parse(upcomingEpisode);
 			}
 		}
+		
 	}
+	
 	
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
@@ -143,6 +144,19 @@ public class TVShow {
 	
 	public static ArrayList<TVShow> searchTVShows(String query){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
+		
+		String url = "https://api.themoviedb.org/3/search/tv?api_key="+Main.apiKey+"&query="+query;
+		JSONObject json;
+		try{
+			json = Main.getJSONAtURL(url);
+		}catch(JSONException e){
+			return list;
+		}
+		
+		for(int i=0;i<json.getJSONArray("results").length();i++){
+			list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+		}
+		
 		
 		return list;
 	}

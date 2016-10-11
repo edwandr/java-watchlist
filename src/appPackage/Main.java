@@ -45,7 +45,7 @@ public class Main extends Application{
 
         UIMenu menu = new UIMenu();
         application.setLeft(menu);
-        
+
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
 
         UIListPane listPane = new UIListPane(tvshows);
@@ -55,7 +55,7 @@ public class Main extends Application{
         primaryStage.setScene(scene);
         primaryStage.show();
 	}
-
+	
 	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
