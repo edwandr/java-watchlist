@@ -27,12 +27,9 @@ public class User {
 	
 	public void removeFavorite(Integer id)
 	{
-		for(int i = 0; i < favorite.size(); i++)
-		{
-			if (favorite.get(i).id == id);
-			{
+		for(int i = 0; i < favorite.size(); i++){
+			if (favorite.get(i).getId() == id);
 				favorite.remove(i);
-			}
 		}
 	}
 	

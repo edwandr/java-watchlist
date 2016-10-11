@@ -5,7 +5,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Iterator;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -14,15 +17,14 @@ public class Main {
 	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
 	
 	public static void main(String[] args) {
-		TVShow simpsons = new TVShow(456);
-		System.out.println(simpsons.toString());
-		
-		TVShow got = new TVShow(1399);
-		System.out.println(got.toString());
-		
+		ArrayList<TVShow> list = TVShow.getPopularTVShows();
+		Iterator<TVShow> it = list.iterator();
+		while(it.hasNext()){
+			System.out.println(it.next().toString());
+		}
 	}
  
-	public static JSONObject getJSONAtURL(String myURL) {
+	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
 		InputStreamReader in = null;
@@ -47,8 +49,13 @@ public class Main {
 		} catch (Exception e) {
 			
 		}
- 
-		return new JSONObject(sb.toString());
+		
+		try{
+			return new JSONObject(sb.toString());
+		}
+		catch(JSONException e){
+			throw new JSONException("Bad JSON");
+		}
 	}
 	
 	
