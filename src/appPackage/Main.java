@@ -6,7 +6,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,19 +45,8 @@ public class Main extends Application{
 
         UIMenu menu = new UIMenu();
         application.setLeft(menu);
-
-        TVShow[] tvshows = new TVShow[] { new TVShow(Integer.parseInt("500")),
-        								  new TVShow(Integer.parseInt("1418")),
-        								  new TVShow(Integer.parseInt("1416")),
-        								  new TVShow(Integer.parseInt("4614")),
-        								  new TVShow(Integer.parseInt("1402")),
-        								  new TVShow(Integer.parseInt("1399")),
-        								  new TVShow(Integer.parseInt("500")),
-        								  new TVShow(Integer.parseInt("1418")),
-        								  new TVShow(Integer.parseInt("1416")),
-        								  new TVShow(Integer.parseInt("4614")),
-        								  new TVShow(Integer.parseInt("1402")),
-        								  new TVShow(Integer.parseInt("1399"))};
+        
+		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
 
         UIListPane listPane = new UIListPane(tvshows);
 
