@@ -5,6 +5,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javafx.application.Application;
@@ -12,37 +16,37 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage; 
+import javafx.stage.Stage;
 
 
 public class Main extends Application{
-	
+
 	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
-	
-	public static void main(String... args) { 
+
+	public static void main(String... args) {
 		//
 		//System.out.println(simpsons.toString());
-		Application.launch(args); 
-	} 
-	
-	@Override 
-	public void start(Stage primaryStage) throws Exception { 
+		Application.launch(args);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("Java-watchlist");
         Group root = new Group();
         Scene scene = new Scene(root, 500, 500, Color.WHITE);
         primaryStage.setWidth(1000);
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
-        
+
         BorderPane application = new BorderPane();
         root.getChildren().add(application);
-        
+
         UISearchBar searchbar = new UISearchBar();
         application.setTop(searchbar);
-        
+
         UIMenu menu = new UIMenu();
         application.setLeft(menu);
-        
+
         TVShow[] tvshows = new TVShow[] { new TVShow(Integer.parseInt("500")),
         								  new TVShow(Integer.parseInt("1418")),
         								  new TVShow(Integer.parseInt("1416")),
@@ -54,18 +58,17 @@ public class Main extends Application{
         								  new TVShow(Integer.parseInt("1416")),
         								  new TVShow(Integer.parseInt("4614")),
         								  new TVShow(Integer.parseInt("1402")),
-        								  new TVShow(Integer.parseInt("1399"))}; 
+        								  new TVShow(Integer.parseInt("1399"))};
 
         UIListPane listPane = new UIListPane(tvshows);
-        
+
         application.setCenter(listPane);
 
         primaryStage.setScene(scene);
         primaryStage.show();
-	} 
+	}
 
- 
-	public static JSONObject getJSONAtURL(String myURL) {
+	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
 		InputStreamReader in = null;
@@ -73,7 +76,8 @@ public class Main extends Application{
 			URL url = new URL(myURL);
 			urlConn = url.openConnection();
 			if (urlConn != null)
-				urlConn.setReadTimeout(60 * 1000);
+				//Timeout at 5 seconds
+				urlConn.setReadTimeout(5 * 1000);
 			if (urlConn != null && urlConn.getInputStream() != null) {
 				in = new InputStreamReader(urlConn.getInputStream(), Charset.defaultCharset());
 				BufferedReader bufferedReader = new BufferedReader(in);
@@ -87,9 +91,17 @@ public class Main extends Application{
 			}
 			in.close();
 		} catch (Exception e) {
-			throw new RuntimeException("Exception while calling URL:" + myURL, e);
+
 		}
- 
-		return new JSONObject(sb.toString());
+
+		try{
+			return new JSONObject(sb.toString());
+		}
+		catch(JSONException e){
+			throw new JSONException("Bad JSON");
+		}
 	}
+
+
+
 }
