@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 
 
 public class UIListPane extends ScrollPane {
-	public UIListPane(ArrayList<TVShow> tvshows) {
+	public UIListPane(ArrayList<TVShow> tvshows, UIApplication application) {
 		FlowPane list = new FlowPane();
 		list.setPadding(new Insets(20, 20, 20, 20));
 		list.setVgap(20);
@@ -23,7 +24,19 @@ public class UIListPane extends ScrollPane {
 		
 		while (it.hasNext()){
 			try {
-		    	list.getChildren().addAll( new ImageView(SwingFXUtils.toFXImage(it.next().getPoster(), null)));
+				TVShow show = it.next();
+				UIDynamicImage poster = new UIDynamicImage(SwingFXUtils.toFXImage(show.getPoster(), null), show.getId());
+				poster.addObserver(application);
+		    	list.getChildren().addAll(poster);
+		    	
+		    	//Setting an action on the click of the poster
+		    	poster.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+		    	     @Override
+		    	     public void handle(MouseEvent event) {
+		    	    	 poster.notifyObservers(poster.getTVShowId());
+		    	     }
+		    	});
 			}
 			catch (NullPointerException e)
 			{

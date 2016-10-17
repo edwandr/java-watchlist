@@ -38,14 +38,16 @@ public class Main extends Application{
 
         UIApplication application = new UIApplication();
         root.getChildren().add(application);
-
-        UIMenu menu = new UIMenu();
+        
+        UIDynamicLink shows = new UIDynamicLink("Featured shows");
+        shows.addObserver(application);
+        UIMenu menu = new UIMenu(shows);
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
-        UIListPane listPane = new UIListPane(tvshows);
+        UIListPane listPane = new UIListPane(tvshows, application);
         application.setCenter(listPane);
-        
+                
         UISearchButton search = new UISearchButton("Search");
         search.addObserver(application);
         UISearchBar searchbar = new UISearchBar(search);
