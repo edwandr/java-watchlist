@@ -5,24 +5,59 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import javafx.application.Application;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
-public class Main {
-	
+
+public class Main extends Application{
+
 	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
-	
-	public static void main(String[] args) {
-		TVShow simpsons = new TVShow(456);
-		System.out.println(simpsons.toString());
-		
-		TVShow got = new TVShow(1399);
-		System.out.println(got.toString());
-		
+
+	public static void main(String... args) {
+		//
+		//System.out.println(simpsons.toString());
+		Application.launch(args);
 	}
- 
-	public static JSONObject getJSONAtURL(String myURL) {
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		primaryStage.setTitle("Java-watchlist");
+        Group root = new Group();
+        Scene scene = new Scene(root, 500, 500, Color.WHITE);
+        primaryStage.setWidth(1000);
+        primaryStage.setHeight(680);
+        primaryStage.setResizable(false);
+
+        UIApplication application = new UIApplication();
+        root.getChildren().add(application);
+
+        UIMenu menu = new UIMenu();
+        application.setLeft(menu);
+
+		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
+        UIListPane listPane = new UIListPane(tvshows);
+        application.setCenter(listPane);
+        
+        UISearchButton search = new UISearchButton("Search");
+        search.addObserver(application);
+        UISearchBar searchbar = new UISearchBar(search);
+        application.setTop(searchbar);
+
+        primaryStage.setScene(scene);
+        primaryStage.show();
+        
+        
+	}
+	
+	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
 		InputStreamReader in = null;
@@ -45,12 +80,17 @@ public class Main {
 			}
 			in.close();
 		} catch (Exception e) {
-			
+
 		}
- 
-		return new JSONObject(sb.toString());
+
+		try{
+			return new JSONObject(sb.toString());
+		}
+		catch(JSONException e){
+			throw new JSONException("Bad JSON");
+		}
 	}
-	
-	
-	
+
+
+
 }

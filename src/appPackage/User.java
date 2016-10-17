@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class User implements Serializable {
+public class User {
 	
 	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
 	private String favoriteId;
