@@ -22,9 +22,8 @@ public class Main extends Application{
 	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
 
 	public static void main(String... args) {
-		//
-		//System.out.println(simpsons.toString());
 		Application.launch(args);
+		//ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
 	}
 
 	@Override
@@ -35,7 +34,7 @@ public class Main extends Application{
         primaryStage.setWidth(1000);
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
-
+        
         UIApplication application = new UIApplication();
         root.getChildren().add(application);
 
@@ -43,6 +42,8 @@ public class Main extends Application{
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
+		
+		Thread.sleep(1000);
         UIListPane listPane = new UIListPane(tvshows);
         application.setCenter(listPane);
         

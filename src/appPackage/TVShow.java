@@ -11,7 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TVShow {
+public class TVShow{
 	private String name; 
 	private String creator;
 	private String genre;
@@ -122,6 +122,161 @@ public class TVShow {
 		
 	}
 	
+	public TVShow(Integer showID, String withMultithreading){
+		class Creator implements Runnable {
+			public void run() {
+
+				String url = "https://api.themoviedb.org/3/tv/"+showID.toString()+"?api_key="+Main.apiKey;
+				JSONObject json;
+				try{
+					json = Main.getJSONAtURL(url);
+				}catch(JSONException e){return;}
+
+				String defaultString = "N/A";
+				name = json.optString("name", defaultString);
+				nbEpisodes = json.optInt("number_of_episodes");
+				overview = json.optString("overview", defaultString);
+				popularity = json.optDouble("popularity");
+				id = json.optInt("id");
+				nbSeasons = json.optInt("number_of_seasons");
+				voteCount = json.optInt("vote_count");
+				voteAverage = json.optDouble("vote_average");
+				inProduction = json.optBoolean("in_production");
+
+
+				//Create a string representing all creators
+				creator="";
+				for(int i=0;i<json.getJSONArray("created_by").length();i++){
+					creator+=json.getJSONArray("created_by").getJSONObject(i).optString("name");
+					//Add a comma if it is not the last name of the array
+					if(i<json.getJSONArray("created_by").length()-1) creator+=", ";
+				}
+
+				//Create a string representing all genres
+				genre="";
+				for(int i=0;i<json.getJSONArray("genres").length();i++){
+					genre+=json.getJSONArray("genres").getJSONObject(i).optString("name");
+					//Add a comma if it is not the last genre of the array
+					if(i<json.getJSONArray("genres").length()-1) genre+=", ";
+				}
+
+				//Create a string representing all countries of origin
+				countryOfOrigin="";
+				for(int i=0;i<json.getJSONArray("origin_country").length();i++){
+					countryOfOrigin+=json.getJSONArray("origin_country").optString(i, defaultString);
+					//Add a comma if it is not the last name of the array
+					if(i<json.getJSONArray("origin_country").length()-1) countryOfOrigin+=", ";
+				}
+				
+				//For test
+				System.out.println(String.format("%-20s: text fields filled", name));
+
+				class ImageFetcher implements Runnable {
+					private String posterPath;
+					
+					public ImageFetcher(String posterPath){
+						this.posterPath=posterPath;
+					}
+
+					public void run() {
+						System.out.println("Hey, I'm Runny !!");
+						try {
+							//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+							String sizeOption = "w185";
+							poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+posterPath));
+						} catch (Exception e) {
+							
+						}
+						
+						//For test
+						System.out.println(String.format("%-20s: poster retrieved", name));
+					}
+				}
+
+				Thread runny = new Thread(new ImageFetcher(json.optString("poster_path")));
+				runny.setPriority(Thread.MAX_PRIORITY);
+				runny.start();
+
+				class AirDateFetcher implements Runnable {
+					private JSONObject json;
+					
+					public AirDateFetcher(JSONObject json){
+						this.json=json;
+					}
+
+					public void run() {
+						//If the show is still in production, get the next airing time
+						//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
+						Integer lastSeason = json.getJSONArray("seasons").length()-1;
+						String url;
+						if(lastSeason>=0){
+							url = "https://api.themoviedb.org/3/tv/"+id.toString()
+							+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
+							try{
+								json = Main.getJSONAtURL(url);
+							}catch(JSONException e){
+								return;
+							}
+							JSONArray episodes = json.getJSONArray("episodes");
+							
+							//If the season is empty, we'll look at the preceding one
+							if(episodes.length()==0){
+								lastSeason -=1;
+								if (lastSeason<0) return;
+								url = "https://api.themoviedb.org/3/tv/"+id.toString()
+								+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
+								try{
+									json = Main.getJSONAtURL(url);
+								}catch(JSONException e){
+									return;
+								}
+								episodes = json.getJSONArray("episodes");
+							}
+							
+							if(episodes.length()==0) return;
+							String upcomingEpisode = episodes.getJSONObject(episodes.length()-1).optString("air_date", "1970-01-01");
+							nextAiringTime = LocalDate.parse(upcomingEpisode);
+
+							for (int i=episodes.length()-2;i>=0;i--){
+								upcomingEpisode = episodes.getJSONObject(episodes.length()-1).optString("air_date", "1970-01-01");
+								//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
+								if(LocalDate.parse(upcomingEpisode).isBefore(nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now()))
+									nextAiringTime=LocalDate.parse(upcomingEpisode);
+							}
+						}
+						
+						//For test
+						System.out.println(String.format("%-20s: next airing time determined", name));
+					}
+				}
+				
+				Thread runnaroo = new Thread(new AirDateFetcher(json));
+				runnaroo.start();
+				
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+		}
+		
+		Thread theArtist = new Thread(new Creator());
+		theArtist.start();
+		
+		return;
+	}
+	
+	/*
+	//Make a function to clone a TVShow
+	public TVShow(TVShow show){
+
+		this.name = show.name;
+	}
+	*/
+	
 	
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
@@ -135,9 +290,10 @@ public class TVShow {
 		}
 		
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			
+			//list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id"),"WithMultiThreading"));
 		}
-		
 		
 		return list;
 	}

@@ -2,11 +2,13 @@ package appPackage;
 
 import java.util.ArrayList;
 
-public class User {
+public class User{
 	
-	ArrayList<TVShow> favorite = new ArrayList<TVShow>();
+	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
+	
 	public User()
-	{	
+	{
+		
 	}
 	
 	public void addFavorite(Integer id)
