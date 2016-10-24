@@ -8,9 +8,13 @@ import javafx.scene.layout.BorderPane;
 public class UIApplication extends BorderPane implements Observer {
 
 	Scene scene;
+	User user;
 
-	public UIApplication(Scene scene) {
+	public UIApplication(Scene scene, User user) {
 		this.scene = scene;
+		this.user = user;
+		// Récupération de toutes les données utilisateur à l'initialisation de l'application
+		this.user.loadUser();
 	}
 
 	public void update(String query) {
@@ -19,10 +23,17 @@ public class UIApplication extends BorderPane implements Observer {
 		this.setCenter(newListPane);
 	}
 	
-	public void update(){
-		ArrayList<TVShow> list = TVShow.getPopularTVShows();
-		UIListPane newListPane = new UIListPane(list, this, this.scene);
-		this.setCenter(newListPane);
+	public void update(Boolean type){
+		if (type == Boolean.TRUE){
+			ArrayList<TVShow> list = TVShow.getPopularTVShows();
+			UIListPane newListPane = new UIListPane(list, this, this.scene);
+			this.setCenter(newListPane);
+		}
+		else {
+			UIListPane newListPane = new UIListPane(User.favorite, this, this.scene);
+			this.setCenter(newListPane);
+		}
+
 	}
 	
 	public void update(int tVshowId){

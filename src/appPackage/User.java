@@ -7,11 +7,11 @@ import java.util.*;
 
 public class User {
 	
-	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
-	private String favoriteId;
+	public static ArrayList<TVShow> favorite = new ArrayList<TVShow>();
+	private static String favoriteId;
 	
 	// Sauvegarder l'utilisateur à la fermeture 
-	public void saveUser() {
+	public static void saveUser() {
 		favoriteId = ""; 
 		Iterator<TVShow> it = favorite.iterator();
         while (it.hasNext()) {
@@ -51,13 +51,8 @@ public class User {
 		}
 	}
 
-	//Renvoyer le tableau des favoris 
-	public ArrayList<TVShow> getFavorite(){
-		return favorite;
-	}
-	
-	// Renvoyer le tableau des favoris trié 
-	public ArrayList<TVShow> getFavorite(String sortType)
+	// Renvoyer le tableau des favoris trié
+	public static ArrayList<TVShow> getFavorite(String sortType)
 	{
 			ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
 			if ( "alphabetical".equals(sortType) ) {
@@ -140,7 +135,7 @@ public class User {
 		return description;
 	}
 	//Supprimer un favoris
-	public void removeFavorite(Integer id)
+	public static void removeFavorite(Integer id)
 	{
 		Iterator<TVShow> it = favorite.iterator();
         while (it.hasNext()) {
@@ -148,18 +143,19 @@ public class User {
                 it.remove();                
             }
         }
-        this.saveUser();
+        User.saveUser();
 	}
 	//Ajouter un favoris
-	public void addFavorite(Integer id)
+	public static void addFavorite(Integer id)
 	{
-		this.removeFavorite(id);
+		User.removeFavorite(id);
 		TVShow newFavorite = new TVShow(id);
 		favorite.add(newFavorite);	
-		this.saveUser();
+		User.saveUser();
 	}
+
 	//Test si la série est déjà dans favorites 
-	public boolean isInFavorite(Integer id){
+	public static boolean isInFavorite(Integer id){
 		boolean result = false ;
 		Iterator<TVShow> it = favorite.iterator();
         while (it.hasNext()) {

@@ -5,7 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 
-public class UIFocusPane extends BorderPane {
+public class UIFocusPane extends BorderPane implements Observer {
 	
 	private TVShow focusedShow;
 	
@@ -21,10 +21,20 @@ public class UIFocusPane extends BorderPane {
 	    imageContainer.setCenter(poster);
 	    
 	    this.setRight(imageContainer);
-	    
-	    
-	    UIDetailPane details = new UIDetailPane(this.focusedShow);
-	    this.setLeft(details);
+
+		if (User.isInFavorite(TVShowId)){
+			UIFavoriteButton favButton = new UIFavoriteButton("Remove Favorite", Boolean.FALSE);
+			favButton.addObserver(this);
+			UIDetailPane details = new UIDetailPane(this.focusedShow, favButton);
+			this.setLeft(details);
+		}
+		else {
+			UIFavoriteButton favButton = new UIFavoriteButton("Add Favorite", Boolean.TRUE);
+			favButton.addObserver(this);
+			UIDetailPane details = new UIDetailPane(this.focusedShow, favButton);
+			this.setLeft(details);
+		}
+
 	}
 
 	public TVShow getFocusedShow() {
@@ -33,5 +43,21 @@ public class UIFocusPane extends BorderPane {
 
 	public void setFocusedShow(TVShow focusedShow) {
 		this.focusedShow = focusedShow;
+	}
+
+	public void update(Boolean type){
+		if (type == Boolean.TRUE)
+		{
+			UIFavoriteButton favButton = new UIFavoriteButton("Remove Favorite", Boolean.FALSE);
+			favButton.addObserver(this);
+			UIDetailPane newDetails = new UIDetailPane(this.focusedShow, favButton);
+			this.setLeft(newDetails);
+		}
+		else {
+			UIFavoriteButton favButton = new UIFavoriteButton("Add Favorite", Boolean.TRUE);
+			favButton.addObserver(this);
+			UIDetailPane newDetails = new UIDetailPane(this.focusedShow, favButton);
+			this.setLeft(newDetails);
+		}
 	}
 }

@@ -1,5 +1,7 @@
 package appPackage;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
@@ -10,7 +12,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 public class UIDetailPane extends VBox {
-	public UIDetailPane(TVShow tvshow){	   
+	public UIDetailPane(TVShow tvshow, UIFavoriteButton favButton){
 		// Adding title
 	    Text title = new Text(tvshow.getName());
 	    title.setFont(Font.font("Verdana", 40));
@@ -45,9 +47,25 @@ public class UIDetailPane extends VBox {
 	    nextEpisode.setWrappingWidth(420);
 	    this.getChildren().add(nextEpisode);
 		
-	    // Adding remove favorite button
-		Button removeFavorite = new Button("Remove Favorite");
-	   	VBox.setMargin(removeFavorite, new Insets(15, 0, 0, 20));
-		this.getChildren().add(removeFavorite);
+	    // Adding favorite button
+		VBox.setMargin(favButton, new Insets(15, 0, 0, 20));
+		this.getChildren().add(favButton);
+
+
+		//Setting an action for the favorite button
+		favButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent e) {
+				if (favButton.getType() == Boolean.TRUE){
+					User.addFavorite(tvshow.getId());
+					favButton.notifyObservers(favButton.getType());
+				}
+				else {
+					User.removeFavorite(tvshow.getId());
+					favButton.notifyObservers(favButton.getType());
+				}
+			}
+		});
 	}
 }

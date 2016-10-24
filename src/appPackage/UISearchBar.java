@@ -29,7 +29,7 @@ public class UISearchBar extends HBox {
 	    textField.setMinWidth(500);
 	    textField.setPromptText("Search a TVShow...");
 	    
-	  //Setting an action for the Submit button
+	  	//Setting an action for the Submit button
 	    submit.setOnAction(new EventHandler<ActionEvent>() {
 
 	    @Override

@@ -36,12 +36,20 @@ public class Main extends Application{
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
 
-        UIApplication application = new UIApplication(scene);
-		boolean add = root.getChildren().add(application);
+		User user = new User();
 
-		UIDynamicLink shows = new UIDynamicLink("Featured shows");
+        UIApplication application = new UIApplication(scene, user);
+		root.getChildren().add(application);
+
+		ArrayList<UIDynamicLink> links = new ArrayList<>();
+		UIDynamicLink shows = new UIDynamicLink("Featured shows", "featured");
         shows.addObserver(application);
-        UIMenu menu = new UIMenu(shows);
+		links.add(shows);
+		UIDynamicLink favorites = new UIDynamicLink("Favorite shows", "favorites");
+		favorites.addObserver(application);
+		links.add(favorites);
+
+		UIMenu menu = new UIMenu(links);
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
