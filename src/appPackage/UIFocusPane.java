@@ -9,9 +9,9 @@ public class UIFocusPane extends BorderPane implements Observer {
 	
 	private TVShow focusedShow;
 	
-	public UIFocusPane(int TVShowId) {
+	public UIFocusPane(TVShow tVShow) {
 		
-		setFocusedShow(new TVShow(TVShowId));
+		setFocusedShow(tVShow);
 	    
 	    ImageView poster = new ImageView(SwingFXUtils.toFXImage(this.focusedShow.getPoster(), null));
 	    poster.setPreserveRatio(true);
@@ -22,7 +22,7 @@ public class UIFocusPane extends BorderPane implements Observer {
 	    
 	    this.setRight(imageContainer);
 
-		if (User.isInFavorite(TVShowId)){
+		if (User.isInFavorite(tVShow.getId())){
 			UIFavoriteButton favButton = new UIFavoriteButton("Remove Favorite", Boolean.FALSE);
 			favButton.addObserver(this);
 			UIDetailPane details = new UIDetailPane(this.focusedShow, favButton);

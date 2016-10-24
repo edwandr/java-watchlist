@@ -27,7 +27,7 @@ public class UIListPane extends ScrollPane {
 		while (it.hasNext()){
 			try {
 				TVShow show = it.next();
-				UIDynamicImage poster = new UIDynamicImage(SwingFXUtils.toFXImage(show.getPoster(), null), show.getId());
+				UIDynamicImage poster = new UIDynamicImage(SwingFXUtils.toFXImage(show.getPoster(), null), show);
 				poster.addObserver(application);
 		    	list.getChildren().addAll(poster);
 
@@ -36,7 +36,7 @@ public class UIListPane extends ScrollPane {
 
 		    	     @Override
 		    	     public void handle(MouseEvent event) {
-		    	    	 poster.notifyObservers(poster.getTVShowId());
+		    	    	 poster.notifyObservers(poster.getTVShow());
 		    	     }
 		    	});
 

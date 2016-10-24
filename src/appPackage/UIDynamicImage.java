@@ -8,20 +8,20 @@ import javafx.scene.image.ImageView;
 
 public class UIDynamicImage extends ImageView{
 	private List<Observer> observers = new ArrayList<Observer>();
-	private int TVShowId;
+	private TVShow tVShow;
 
-	public UIDynamicImage(Image poster, int tVShowId){
+	public UIDynamicImage(Image poster, TVShow tVShow){
 		this.setImage(poster);
-		this.setTVShowId(tVShowId);
+		this.setTVShow(tVShow);
 	}
 	
 	public void addObserver(Observer o){
 		getObservers().add(o);
 	}
 	
-	public void notifyObservers(int tVShowId){
+	public void notifyObservers(TVShow tVShow){
 		for (Observer observer : getObservers()) {
-	         observer.update(tVShowId);
+	         observer.update(tVShow);
 	      }
 	}
 
@@ -33,11 +33,11 @@ public class UIDynamicImage extends ImageView{
 		this.observers = observers;
 	}
 
-	public int getTVShowId() {
-		return TVShowId;
+	public TVShow getTVShow() {
+		return tVShow;
 	}
 
-	public void setTVShowId(int tVShowId) {
-		TVShowId = tVShowId;
+	public void setTVShow(TVShow ptVShow) {
+		tVShow = ptVShow;
 	}
 }

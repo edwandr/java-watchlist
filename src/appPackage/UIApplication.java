@@ -36,8 +36,8 @@ public class UIApplication extends BorderPane implements Observer {
 
 	}
 	
-	public void update(int tVshowId){
-		UIFocusPane focusPane = new UIFocusPane(tVshowId);
+	public void update(TVShow tVshow){
+		UIFocusPane focusPane = new UIFocusPane(tVshow);
 		this.setCenter(focusPane);
 	}
 
