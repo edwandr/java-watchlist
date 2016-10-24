@@ -29,23 +29,23 @@ public class Main extends Application{
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("Java-watchlist");
+		primaryStage.setTitle("JavaWatchlist");
         Group root = new Group();
         Scene scene = new Scene(root, 500, 500, Color.WHITE);
         primaryStage.setWidth(1000);
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
 
-        UIApplication application = new UIApplication();
-        root.getChildren().add(application);
-        
-        UIDynamicLink shows = new UIDynamicLink("Featured shows");
+        UIApplication application = new UIApplication(scene);
+		boolean add = root.getChildren().add(application);
+
+		UIDynamicLink shows = new UIDynamicLink("Featured shows");
         shows.addObserver(application);
         UIMenu menu = new UIMenu(shows);
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
-        UIListPane listPane = new UIListPane(tvshows, application);
+        UIListPane listPane = new UIListPane(tvshows, application, scene);
         application.setCenter(listPane);
                 
         UISearchButton search = new UISearchButton("Search");

@@ -6,6 +6,8 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 
@@ -17,9 +19,12 @@ public class UISearchBar extends HBox {
 		this.setSpacing(10);
 		this.setStyle("-fx-background-color: #efdecd;");
 
-	    Label brand = new Label("Java-watchlist");
-	    brand.setMinWidth(125);
-	    
+		Image logo = new Image("java_watchlist_favicon.png");
+		ImageView brand = new ImageView();
+		brand.setImage(logo);
+		brand.setFitWidth(130);
+		brand.setPreserveRatio(true);
+
 	    TextField textField = new TextField ();
 	    textField.setMinWidth(500);
 	    textField.setPromptText("Search a TVShow...");
