@@ -14,7 +14,7 @@ public class User{
 	public void addFavorite(Integer id)
 	{
 		TVShow newFavorite = new TVShow(id);
-		favorite.add(newFavorite);			
+		favorite.add(newFavorite);	
 	}
 	
 	public String AllFavtoString ()
