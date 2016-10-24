@@ -1,6 +1,7 @@
 package appPackage;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -58,8 +59,9 @@ public class User {
 	// Renvoyer le tableau des favoris trié 
 	public ArrayList<TVShow> getFavorite(String sortType)
 	{
+			ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
 			if ( "alphabetical".equals(sortType) ) {
-				Collections.sort(favorite, new Comparator<TVShow>() {
+				Collections.sort(favoriteClone, new Comparator<TVShow>() {
 			        @Override
 			        public int compare(TVShow TVShow1, TVShow TVShow2) {
 			        	String name1 = (String)TVShow1.getName();
@@ -70,7 +72,7 @@ public class User {
 			    });
 			}		
 		     else if ("popularity".equals(sortType)) {
-		    	 Collections.sort(favorite, new Comparator<TVShow>() {
+		    	 Collections.sort(favoriteClone, new Comparator<TVShow>() {
 				        @Override
 				        public int compare(TVShow TVShow1, TVShow TVShow2) {
 				        	Double popularity1 = (Double)TVShow1.getPopularity();
@@ -86,7 +88,43 @@ public class User {
 				        }
 				    });	    	 	    
 		     }
-			return favorite;
+		     else if ("airingTime".equals(sortType)) {
+		    	 
+		    	 Collections.sort(favoriteClone, new Comparator<TVShow>() {
+				        @Override
+				        public int compare(TVShow TVShow1, TVShow TVShow2) {
+				        	LocalDate nextAiringTime1 = TVShow1.getNextAiringTime();
+				        	LocalDate nextAiringTime2 = TVShow2.getNextAiringTime();
+				        	if (nextAiringTime1 == null){
+				        		if (nextAiringTime2 == null){
+				        			String name1 = (String)TVShow1.getName();
+						            String name2 = (String)TVShow2.getName();
+						            int result2 = name1.compareTo(name2);
+						            return result2;
+				        		}
+				        		else {
+				        			return -1;
+				        		}
+				        	}
+				        	else if (nextAiringTime2 == null){
+				        		return 1;
+				        	}
+				        	else {
+				        		int result = nextAiringTime1.compareTo(nextAiringTime2);
+					            if(result == 0){
+					            	String name1 = (String)TVShow1.getName();
+						            String name2 = (String)TVShow2.getName();
+						            int result2 = name1.compareTo(name2);
+						            return result2;
+					            }
+					            return result;
+				        	}
+				            
+				        }
+				    });	    	 	    
+		     }
+		     else if ("lastAdded".equals(sortType)) {}
+			return favoriteClone;
 	}
 	public User()
 	{	
@@ -110,13 +148,25 @@ public class User {
                 it.remove();                
             }
         }
+        this.saveUser();
 	}
 	//Ajouter un favoris
 	public void addFavorite(Integer id)
 	{
 		this.removeFavorite(id);
 		TVShow newFavorite = new TVShow(id);
-		favorite.add(newFavorite);			
+		favorite.add(newFavorite);	
+		this.saveUser();
 	}
-	
+	//Test si la série est déjà dans favorites 
+	public boolean isInFavorite(Integer id){
+		boolean result = false ;
+		Iterator<TVShow> it = favorite.iterator();
+        while (it.hasNext()) {
+            if (it.next().getId().equals(id)) {
+                result = true ;                
+            }
+        }
+		return result;
+	}
 }
