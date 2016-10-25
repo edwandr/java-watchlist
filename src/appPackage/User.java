@@ -12,11 +12,11 @@ public class User{
 	
 	// Sauvegarder l'utilisateur à la fermeture 
 	public static void saveUser() {
-		favoriteId = ""; 
+		favoriteId = "";
 		Iterator<TVShow> it = favorite.iterator();
-        while (it.hasNext()) {
-            favoriteId += it.next().getId().toString() + ";";
-        }
+		while (it.hasNext()) {
+			favoriteId += it.next().getId().toString() + ";";
+		}
 		
 		try {
 			PrintWriter out = new PrintWriter("sauvegarde.txt");
