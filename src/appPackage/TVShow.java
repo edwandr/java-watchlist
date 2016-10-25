@@ -116,45 +116,45 @@ public class TVShow{
 		}
 	}
 
-	public void fetchNextAiringTime(){
+	public void fetchNextAiringTime() {
 		//If the show is still in production, get the next airing time
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
 		Integer lastSeason = this.nbSeasons;
 		String url;
 		JSONObject json;
-		if(lastSeason>=0){
-			url = "https://api.themoviedb.org/3/tv/"+this.id.toString()
-			+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
-			try{
+		if (lastSeason >= 0) {
+			url = "https://api.themoviedb.org/3/tv/" + this.id.toString()
+					+ "/season/" + lastSeason.toString() + "?api_key=" + Main.apiKey;
+			try {
 				json = Main.getJSONAtURL(url);
-			}catch(JSONException e){
+			} catch (JSONException e) {
 				return;
 			}
 			JSONArray episodes = json.getJSONArray("episodes");
 
 			//If the season is empty, we'll look at the preceding one
-			if(episodes.length()==0){
-				lastSeason -=1;
-				if (lastSeason<0) return;
-				url = "https://api.themoviedb.org/3/tv/"+this.id.toString()
-				+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
-				try{
+			if (episodes.length() == 0) {
+				lastSeason -= 1;
+				if (lastSeason < 0) return;
+				url = "https://api.themoviedb.org/3/tv/" + this.id.toString()
+						+ "/season/" + lastSeason.toString() + "?api_key=" + Main.apiKey;
+				try {
 					json = Main.getJSONAtURL(url);
-				}catch(JSONException e){
+				} catch (JSONException e) {
 					return;
 				}
 				episodes = json.getJSONArray("episodes");
 			}
 
-			if(episodes.length()==0) return;
-			String upcomingEpisode = episodes.getJSONObject(episodes.length()-1).optString("air_date", "1970-01-01");
+			if (episodes.length() == 0) return;
+			String upcomingEpisode = episodes.getJSONObject(episodes.length() - 1).optString("air_date", "1970-01-01");
 			this.nextAiringTime = LocalDate.parse(upcomingEpisode);
 
-			for (int i=episodes.length()-2;i>=0;i--){
+			for (int i = episodes.length() - 2; i >= 0; i--) {
 				upcomingEpisode = episodes.getJSONObject(i).optString("air_date", "1970-01-01");
 				//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
-				if(LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now().minusDays(1)))
-					this.nextAiringTime=LocalDate.parse(upcomingEpisode);
+				if (LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime) && LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now().minusDays(1)))
+					this.nextAiringTime = LocalDate.parse(upcomingEpisode);
 			}
 
 			this.nextEpisodeisSoon = Boolean.FALSE;
@@ -162,6 +162,7 @@ public class TVShow{
 				this.nextEpisodeisSoon = Boolean.TRUE;
 			}
 		}
+	}
 
 	public static TVShow fetchFromID(Integer showID, ExecutorService threadPool, ExecutorService threadSubPool){
 		TVShow result = new TVShow();
@@ -402,6 +403,7 @@ public class TVShow{
 
 	public void setNextEpisodeisSoon(Boolean nextEpisodeisSoon) {
 		this.nextEpisodeisSoon = nextEpisodeisSoon;
+	}
 
 	public ArrayList<TVSeason> getSeasons(){
 		return seasons;
