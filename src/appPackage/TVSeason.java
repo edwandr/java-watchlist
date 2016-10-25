@@ -30,11 +30,20 @@ public class TVSeason {
 		this.seasonId = json.optInt("id");
 		this.airDate = json.optString("air_date",defaultString);
 		this.seasonNum = seasonNumber;
-		this.episodeNum = 0;
-		for(Integer i=0;i<json.getJSONArray("episodes").length();i++){
-			this.episodeNum+= 1;
-			TVEpisode newEpisode = new TVEpisode(id,seasonNum,i+1);
+	
+		
+		for(int i=0;i<json.getJSONArray("episodes").length();i++){
+			TVEpisode newEpisode = new TVEpisode();
+			newEpisode.setEpisodeNum(Integer.parseInt(json.getJSONArray("episodes").getJSONObject(i).optString("episode_number")));
+			newEpisode.setairDate(json.getJSONArray("episodes").getJSONObject(i).optString("air_date"));
+			newEpisode.setName(json.getJSONArray("episodes").getJSONObject(i).optString("name"));
+			newEpisode.setOverview(json.getJSONArray("episodes").getJSONObject(i).optString("overview"));
+			newEpisode.setVoteAverage(Double.parseDouble(json.getJSONArray("episodes").getJSONObject(i).optString("vote_average")));
+			newEpisode.setVoteCount(Integer.parseInt(json.getJSONArray("episodes").getJSONObject(i).optString("vote_count")));
+			newEpisode.setEpisodeId(Integer.parseInt(json.getJSONArray("episodes").getJSONObject(i).optString("id")));
+			newEpisode.setSeason(seasonNum);
 			episodes.add(newEpisode);
+			
 		}
 		
 	}
@@ -75,7 +84,8 @@ public class TVSeason {
 		return episodeNum;
 	}
 	public ArrayList<TVEpisode> getEpisodes(){
-		return episodes;
+		return this.episodes;
 	}
+	
 	
 }
