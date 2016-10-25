@@ -5,18 +5,18 @@ import java.time.LocalDate;
 import java.util.*;
 
 
-public class User {
+public class User{
 	
 	public static ArrayList<TVShow> favorite = new ArrayList<TVShow>();
 	private static String favoriteId;
 	
 	// Sauvegarder l'utilisateur à la fermeture 
 	public static void saveUser() {
-		favoriteId = ""; 
+		favoriteId = "";
 		Iterator<TVShow> it = favorite.iterator();
-        while (it.hasNext()) {
-            favoriteId += it.next().getId().toString() + ";";
-        }
+		while (it.hasNext()) {
+			favoriteId += it.next().getId().toString() + ";";
+		}
 		
 		try {
 			PrintWriter out = new PrintWriter("sauvegarde.txt");

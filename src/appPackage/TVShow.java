@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -11,8 +14,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TVShow {
-	private String name;
+import javafx.concurrent.Task;
+
+public class TVShow{
+
+	public String name;
 	private String creator;
 	private String genre;
 	private Integer id;
@@ -23,6 +29,7 @@ public class TVShow {
 	private String overview;
 	private String posterPath;
 	private BufferedImage poster;
+	private BufferedImage bigPoster;
 	private Double popularity;
 	private Double voteAverage;
 	private Integer voteCount;
@@ -30,6 +37,9 @@ public class TVShow {
 
 	private LocalDate nextAiringTime;
 	private Boolean nextEpisodeisSoon;
+
+	public TVShow() {
+	}
 
 	public TVShow(Integer id){
 
@@ -81,16 +91,40 @@ public class TVShow {
 			String sizeOption = "w185";
 			this.posterPath = json.optString("poster_path");
 			this.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+posterPath));
-		} catch (Exception e) {}
+		} catch (Exception e) {
+
+		}
+
+		this.fetchNextAiringTime();
+	}
 
 
+	/*
+	//TODO Make a function to clone a TVShow
+	public TVShow(TVShow show){
+		this.name = show.name;
+	}
+	*/
 
+	public void fetchBigPoster(){
+		try {
+			//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+			String sizeOption = "w500";
+			this.bigPoster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+this.posterPath));
+		} catch (Exception e) {
+
+		}
+	}
+
+	public void fetchNextAiringTime(){
 		//If the show is still in production, get the next airing time
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
-		Integer lastSeason = json.getJSONArray("seasons").length()-1;
+		Integer lastSeason = this.nbSeasons;
+		String url;
+		JSONObject json;
 		if(lastSeason>=0){
 			url = "https://api.themoviedb.org/3/tv/"+this.id.toString()
-					+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
+			+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
 			try{
 				json = Main.getJSONAtURL(url);
 			}catch(JSONException e){
@@ -120,7 +154,7 @@ public class TVShow {
 				upcomingEpisode = episodes.getJSONObject(i).optString("air_date", "1970-01-01");
 				//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
 				if(LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now().minusDays(1)))
-						this.nextAiringTime=LocalDate.parse(upcomingEpisode);
+					this.nextAiringTime=LocalDate.parse(upcomingEpisode);
 			}
 
 			this.nextEpisodeisSoon = Boolean.FALSE;
@@ -128,11 +162,90 @@ public class TVShow {
 				this.nextEpisodeisSoon = Boolean.TRUE;
 			}
 		}
+
+	public static TVShow fetchFromID(Integer showID, ExecutorService threadPool, ExecutorService threadSubPool){
+		TVShow result = new TVShow();
+
+		Task<Void> creatorTask = new Task<Void>() {
+		    @Override protected Void call() throws Exception {
+
+				String url = "https://api.themoviedb.org/3/tv/"+showID.toString()+"?api_key="+Main.apiKey;
+				JSONObject json;
+				try{
+					json = Main.getJSONAtURL(url);
+				}catch(JSONException e){return null;}
+
+				String defaultString = "N/A";
+				result.name = json.optString("name", defaultString);
+				result.nbEpisodes = json.optInt("number_of_episodes");
+				result.overview = json.optString("overview", defaultString);
+				result.popularity = json.optDouble("popularity");
+				result.id = json.optInt("id");
+				result.nbSeasons = json.optInt("number_of_seasons");
+				result.voteCount = json.optInt("vote_count");
+				result.voteAverage = json.optDouble("vote_average");
+				result.inProduction = json.optBoolean("in_production");
+
+
+				//Create a string representing all creators
+				result.creator="";
+				for(int i=0;i<json.getJSONArray("created_by").length();i++){
+					result.creator+=json.getJSONArray("created_by").getJSONObject(i).optString("name");
+					//Add a comma if it is not the last name of the array
+					if(i<json.getJSONArray("created_by").length()-1) result.creator+=", ";
+				}
+
+				//Create a string representing all genres
+				result.genre="";
+				for(int i=0;i<json.getJSONArray("genres").length();i++){
+					result.genre+=json.getJSONArray("genres").getJSONObject(i).optString("name");
+					//Add a comma if it is not the last genre of the array
+					if(i<json.getJSONArray("genres").length()-1) result.genre+=", ";
+				}
+
+				//Create a string representing all countries of origin
+				result.countryOfOrigin="";
+				for(int i=0;i<json.getJSONArray("origin_country").length();i++){
+					result.countryOfOrigin+=json.getJSONArray("origin_country").optString(i, defaultString);
+					//Add a comma if it is not the last name of the array
+					if(i<json.getJSONArray("origin_country").length()-1) result.countryOfOrigin+=", ";
+				}
+
+				//For test
+				System.out.println(String.format("%-20s: text fields filled", result.name));
+
+				Task<Void> task = new Task<Void>() {
+				    @Override protected Void call() throws Exception {
+						try {
+							//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+							String sizeOption = "w185";
+							result.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+json.optString("poster_path")));
+						} catch (Exception e) {
+
+						}
+						//For test
+						System.out.println(String.format("%-20s: poster retrieved", result.name));
+
+
+				    	return null;
+				    }
+				};
+
+				threadSubPool.execute(task);
+				return null;
+			}
+		};
+
+		threadPool.execute(creatorTask);
+
+		return result;
 	}
 
 
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
+		ExecutorService threadPool = Executors.newFixedThreadPool(8);
+		ExecutorService threadSubPool = Executors.newFixedThreadPool(8);
 
 		String url = "https://api.themoviedb.org/3/tv/popular?api_key="+Main.apiKey;
 		JSONObject json;
@@ -143,15 +256,32 @@ public class TVShow {
 		}
 
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			list.add(TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool, threadSubPool));
 		}
 
+		try {
+			//Ask the first thread pool to shutdown
+			threadPool.shutdown();
+			if(!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+				System.out.println("Main Thread Pool has timed out !");
+				threadPool.shutdownNow();
+			}
+			//Since first pool is shutdown, second pool is populated. We now wait for it to shutdown.
+			threadSubPool.shutdown();
+			if(!threadSubPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+				System.out.println("Sub Thread Pool has timed out !");
+				threadSubPool.shutdownNow();
+			}
+		} catch (InterruptedException e) {
 
+		}
 		return list;
 	}
 
 	public static ArrayList<TVShow> searchTVShows(String query){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
+		ExecutorService threadPool = Executors.newFixedThreadPool(8);
+		ExecutorService threadSubPool = Executors.newFixedThreadPool(8);
 
 		String url = "https://api.themoviedb.org/3/search/tv?api_key="+Main.apiKey+"&query="+query;
 		JSONObject json;
@@ -162,10 +292,26 @@ public class TVShow {
 		}
 
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			//list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			list.add(TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool, threadSubPool));
 		}
 
+		try {
+			//Ask the first thread pool to shutdown
+			threadPool.shutdown();
+			if(!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+				System.out.println("Main Thread Pool has timed out !");
+				threadPool.shutdownNow();
+			}
+			//Since first pool is shutdown, second pool is populated. We now wait for it to shutdown.
+			threadSubPool.shutdown();
+			if(!threadSubPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+				System.out.println("Sub Thread Pool has timed out !");
+				threadSubPool.shutdownNow();
+			}
+		} catch (InterruptedException e) {
 
+		}
 		return list;
 	}
 
@@ -224,6 +370,13 @@ public class TVShow {
 		return poster;
 	}
 
+	public BufferedImage getBigPoster(){
+		if(this.bigPoster==null){
+			this.fetchBigPoster();
+		}
+		return this.bigPoster;
+	}
+
 	public Double getPopularity() {
 		return popularity;
 	}
@@ -237,9 +390,12 @@ public class TVShow {
 	}
 
 	public LocalDate getNextAiringTime() {
+		if(this.nextAiringTime==null){
+			this.fetchNextAiringTime();
+		}
 		return this.nextAiringTime;
 	}
-	
+
 	public Boolean getNextEpisodeisSoon() {
 		return nextEpisodeisSoon;
 	}
