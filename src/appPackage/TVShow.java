@@ -128,11 +128,6 @@ public class TVShow {
 				this.nextEpisodeisSoon = Boolean.TRUE;
 			}
 		}
-		//Make an array with all the seasons
-		for(Integer i=0;i<json.getJSONArray("seasons").length();i++){
-			TVSeason newSeason = new TVSeason(id,nbSeasons);
-			seasons.add(newSeason);
-		}
 	}
 
 
