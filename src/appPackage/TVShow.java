@@ -27,6 +27,7 @@ public class TVShow {
 	private Integer voteCount;
 	
 	private LocalDate nextAiringTime;
+	private Boolean nextEpisodeisSoon;
 	
 	public TVShow(Integer id){
 		
@@ -117,6 +118,11 @@ public class TVShow {
 				//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
 				if(LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now()))
 						this.nextAiringTime=LocalDate.parse(upcomingEpisode);
+			}
+
+			this.nextEpisodeisSoon = Boolean.FALSE;
+			if (LocalDate.now().isAfter(this.nextAiringTime.minusDays(2)) && this.nextAiringTime.isAfter(LocalDate.now())) {
+				this.nextEpisodeisSoon = Boolean.TRUE;
 			}
 		}
 		
@@ -230,5 +236,13 @@ public class TVShow {
 
 	public LocalDate getNextAiringTime() {
 		return this.nextAiringTime;
+	}
+
+	public Boolean getNextEpisodeisSoon() {
+		return nextEpisodeisSoon;
+	}
+
+	public void setNextEpisodeisSoon(Boolean nextEpisodeisSoon) {
+		this.nextEpisodeisSoon = nextEpisodeisSoon;
 	}
 }

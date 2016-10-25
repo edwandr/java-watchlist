@@ -53,7 +53,7 @@ public class Main extends Application{
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
-        UIListPane listPane = new UIListPane(tvshows, application, scene);
+        UIListPane listPane = new UIListPane(tvshows, application, scene, Boolean.FALSE);
         application.setCenter(listPane);
                 
         UISearchButton search = new UISearchButton("Search");

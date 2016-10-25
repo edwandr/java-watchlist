@@ -8,15 +8,17 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 
 
 public class UIListPane extends ScrollPane {
-	public UIListPane(ArrayList<TVShow> tvshows, UIApplication application, Scene scene) {
+	public UIListPane(ArrayList<TVShow> tvshows, UIApplication application, Scene scene, Boolean notification) {
 		FlowPane list = new FlowPane();
-		list.setPadding(new Insets(20, 20, 20, 20));
+		list.setPadding(new Insets(10, 10, 10, 10));
 		list.setVgap(20);
 		list.setHgap(20);
 		list.setPrefWrapLength(300);
@@ -29,7 +31,31 @@ public class UIListPane extends ScrollPane {
 				TVShow show = it.next();
 				UIDynamicImage poster = new UIDynamicImage(SwingFXUtils.toFXImage(show.getPoster(), null), show);
 				poster.addObserver(application);
-		    	list.getChildren().addAll(poster);
+
+
+				BorderPane container = new BorderPane();
+
+				if (notification == Boolean.TRUE) {
+					if (show.getNextEpisodeisSoon() == Boolean.TRUE)
+					{
+						UINotification notifiedPoster = new UINotification(poster);
+						container.setCenter(notifiedPoster);
+					}
+					else
+					{
+						container.setCenter(poster);
+					}
+				}
+				else
+				{
+					container.setCenter(poster);
+				}
+				Label title = new Label(show.getName());
+				title.setMaxWidth(180);
+				container.setBottom(title);
+				
+		    	list.getChildren().addAll(container);
+
 
 		    	//Setting an action on the click of the poster
 		    	poster.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
