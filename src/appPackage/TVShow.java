@@ -6,7 +6,6 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
@@ -18,6 +17,7 @@ import org.json.JSONObject;
 import javafx.concurrent.Task;
 
 public class TVShow{
+	
 	public String name; 
 	private String creator;
 	private String genre;
@@ -27,11 +27,13 @@ public class TVShow{
 	private Integer nbSeasons;
 	private String countryOfOrigin;
 	private String overview;
-	public BufferedImage poster;
-	
+	private String posterPath;
+	private BufferedImage poster;
+	private BufferedImage bigPoster;
 	private Double popularity;
 	private Double voteAverage;
 	private Integer voteCount;
+	private ArrayList<TVSeason> seasons = new ArrayList<TVSeason>();
 	
 	private LocalDate nextAiringTime;
 	
@@ -87,10 +89,13 @@ public class TVShow{
 		try {
 			//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
 			String sizeOption = "w185";
-			this.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+json.optString("poster_path")));
+			this.posterPath = json.optString("poster_path");
+			this.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+posterPath));
 		} catch (Exception e) {
 			
 		}
+			
+		
 
 		//If the show is still in production, get the next airing time
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
@@ -130,7 +135,11 @@ public class TVShow{
 						this.nextAiringTime=LocalDate.parse(upcomingEpisode);
 			}
 		}
-		
+		//Make an array with all the seasons 
+		for(Integer i=0;i<json.getJSONArray("seasons").length();i++){
+			TVSeason newSeason = new TVSeason(id,nbSeasons);
+			seasons.add(newSeason);
+		}
 	}
 	
 	
@@ -142,14 +151,59 @@ public class TVShow{
 	}
 	*/
 	
-	public void fetchImage(){
-		
+	public void fetchBigPoster(){
+		try {
+			//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+			String sizeOption = "w500";
+			this.bigPoster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+this.posterPath));
+		} catch (Exception e) {
+			
+		}
 	}
 	
 	public void fetchNextAiringTime(){
-		
+		//If the show is still in production, get the next airing time
+		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
+		Integer lastSeason = this.nbSeasons;
+		String url;
+		JSONObject json;
+		if(lastSeason>=0){
+			url = "https://api.themoviedb.org/3/tv/"+this.id.toString()
+			+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
+			try{
+				json = Main.getJSONAtURL(url);
+			}catch(JSONException e){
+				return;
+			}
+			JSONArray episodes = json.getJSONArray("episodes");
+
+			//If the season is empty, we'll look at the preceding one
+			if(episodes.length()==0){
+				lastSeason -=1;
+				if (lastSeason<0) return;
+				url = "https://api.themoviedb.org/3/tv/"+this.id.toString()
+				+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
+				try{
+					json = Main.getJSONAtURL(url);
+				}catch(JSONException e){
+					return;
+				}
+				episodes = json.getJSONArray("episodes");
+			}
+
+			if(episodes.length()==0) return;
+			String upcomingEpisode = episodes.getJSONObject(episodes.length()-1).optString("air_date", "1970-01-01");
+			this.nextAiringTime = LocalDate.parse(upcomingEpisode);
+
+			for (int i=episodes.length()-2;i>=0;i--){
+				upcomingEpisode = episodes.getJSONObject(i).optString("air_date", "1970-01-01");
+				//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
+				if(LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now().minusDays(1)))
+					this.nextAiringTime=LocalDate.parse(upcomingEpisode);
+			}
+		}
 	}
-	
+
 	public static TVShow fetchFromID(Integer showID, ExecutorService threadPool, ExecutorService threadSubPool){
 		TVShow result = new TVShow();
 		
@@ -203,7 +257,6 @@ public class TVShow{
 				
 				Task<Void> task = new Task<Void>() {
 				    @Override protected Void call() throws Exception {
-				    	System.out.println("Hey, I'm Born Again Runny !!");
 						try {
 							//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
 							String sizeOption = "w185";
@@ -220,58 +273,6 @@ public class TVShow{
 				};
 				
 				threadSubPool.execute(task);
-				
-				Task<Void> taskTwo = new Task<Void>() {
-				    @Override protected Void call() throws Exception {
-						//If the show is still in production, get the next airing time
-						//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
-						Integer lastSeason = json.getJSONArray("seasons").length()-1;
-						String url;
-						JSONObject jsonTwo;
-						if(lastSeason>=0){
-							url = "https://api.themoviedb.org/3/tv/"+result.id.toString()
-							+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
-							try{
-								jsonTwo = Main.getJSONAtURL(url);
-							}catch(JSONException e){
-								return null;
-							}
-							JSONArray episodes = jsonTwo.getJSONArray("episodes");
-							
-							//If the season is empty, we'll look at the preceding one
-							if(episodes.length()==0){
-								lastSeason -=1;
-								if (lastSeason<0) return null;
-								url = "https://api.themoviedb.org/3/tv/"+result.id.toString()
-								+"/season/"+lastSeason.toString()+"?api_key="+Main.apiKey;
-								try{
-									jsonTwo = Main.getJSONAtURL(url);
-								}catch(JSONException e){
-									return null;
-								}
-								episodes = jsonTwo.getJSONArray("episodes");
-							}
-							
-							if(episodes.length()==0) return null;
-							String upcomingEpisode = episodes.getJSONObject(episodes.length()-1).optString("air_date", "1970-01-01");
-							result.nextAiringTime = LocalDate.parse(upcomingEpisode);
-
-							for (int i=episodes.length()-2;i>=0;i--){
-								upcomingEpisode = episodes.getJSONObject(i).optString("air_date", "1970-01-01");
-								//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
-								if(LocalDate.parse(upcomingEpisode).isBefore(result.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now().minusDays(1)))
-									result.nextAiringTime=LocalDate.parse(upcomingEpisode);
-							}
-						}
-						
-						//For test
-						System.out.println(String.format("%-20s: next airing time determined", result.name));
-						return null;
-				    }
-				};
-				
-				threadSubPool.execute(taskTwo);
-				
 				return null;
 			}
 		};
@@ -301,23 +302,20 @@ public class TVShow{
 		}
 		
 		try {
+			//Ask the first thread pool to shutdown
 			threadPool.shutdown();
 			if(!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
 				System.out.println("Main Thread Pool has timed out !");
 				threadPool.shutdownNow();
 			}
-		} catch (InterruptedException e) {
-			
-		}
-		
-		try {
+			//Since first pool is shutdown, second pool is populated. We now wait for it to shutdown. 
 			threadSubPool.shutdown();
 			if(!threadSubPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
 				System.out.println("Sub Thread Pool has timed out !");
 				threadSubPool.shutdownNow();
 			}
 		} catch (InterruptedException e) {
-
+			
 		}
 		
 		
@@ -328,6 +326,9 @@ public class TVShow{
 	public static ArrayList<TVShow> searchTVShows(String query){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
 		
+		ExecutorService threadPool = Executors.newFixedThreadPool(8);
+		ExecutorService threadSubPool = Executors.newFixedThreadPool(8);
+		
 		String url = "https://api.themoviedb.org/3/search/tv?api_key="+Main.apiKey+"&query="+query;
 		JSONObject json;
 		try{
@@ -337,8 +338,27 @@ public class TVShow{
 		}
 		
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			//list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
+			list.add(TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool, threadSubPool));
 		}
+		
+		try {
+			//Ask the first thread pool to shutdown
+			threadPool.shutdown();
+			if(!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+				System.out.println("Main Thread Pool has timed out !");
+				threadPool.shutdownNow();
+			}
+			//Since first pool is shutdown, second pool is populated. We now wait for it to shutdown. 
+			threadSubPool.shutdown();
+			if(!threadSubPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
+				System.out.println("Sub Thread Pool has timed out !");
+				threadSubPool.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			
+		}
+		
 		
 		
 		return list;
@@ -355,7 +375,7 @@ public class TVShow{
 		descriptionString+= "Popularity: "+this.popularity+"\n";
 		descriptionString+= "User rating: "+this.voteAverage+"/10 ("+this.voteCount+" votes)\n";
 		descriptionString+= "Latest episode: "+this.nextAiringTime+"\n";
-		descriptionString+= "-----------------------------------------";
+		descriptionString+= "-----------------------------------------\n";
 		return descriptionString;
 	}
 
@@ -398,7 +418,14 @@ public class TVShow{
 	public BufferedImage getPoster() {
 		return poster;
 	}
-
+	
+	public BufferedImage getBigPoster(){
+		if(this.bigPoster==null){
+			this.fetchBigPoster();
+		}
+		return this.bigPoster;
+	}
+	
 	public Double getPopularity() {
 		return popularity;
 	}
@@ -416,5 +443,9 @@ public class TVShow{
 			this.fetchNextAiringTime();
 		}
 		return this.nextAiringTime;
+	}
+	
+	public ArrayList<TVSeason> getSeasons(){
+		return seasons;
 	}
 }
