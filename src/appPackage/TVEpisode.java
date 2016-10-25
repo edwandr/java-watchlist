@@ -4,34 +4,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class TVEpisode {
+	private String airDate;
 	private String name;
 	private String overview;
 	private Double voteAverage;
 	private Integer voteCount;
 	private Integer episodeId;
-	private String airDate;
 	private Integer season;
 	private Integer episodeNum;
 	
 
-	public TVEpisode(Integer id, Integer seasonNumber, Integer episodeNumber){
-		
-		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"/season/"+seasonNumber.toString()+"/episode/"+episodeNumber.toString()+"?api_key="+Main.apiKey+"&language=en-US";
-		JSONObject json;
-		try{
-			json = Main.getJSONAtURL(url);
-		}catch(JSONException e){return;}
-		
-		String defaultString = "N/A";
-		this.name = json.optString("name", defaultString);
-		this.overview = json.optString("overview",defaultString);
-		this.voteCount = json.optInt("vote_count");
-		this.voteAverage = json.optDouble("vote_average");
-		this.episodeId = json.optInt("id");
-		this.airDate = json.optString("air_date",defaultString);
-		this.season = seasonNumber;
-		this.episodeNum = episodeNumber;
-	}
+	public TVEpisode(){}
 	@Override
 	public String toString(){
 		String descriptionString = "";
@@ -67,6 +50,30 @@ public class TVEpisode {
 	}
 	public Integer getEpisodeNum() {
 		return episodeNum;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public void setOverview(String overview) {
+		this.overview = overview;
+	}
+	public void setVoteAverage(Double voteAverage) {
+		this.voteAverage = voteAverage;
+	}
+	public void setVoteCount(Integer voteCount) {
+		this.voteCount = voteCount;
+	}
+	public void setEpisodeId(Integer episodeId) {
+		this.episodeId = episodeId;
+	}
+	public void setairDate(String airDate) {
+		this.airDate = airDate;
+	}
+	public void setSeason(Integer season) {
+		this.season = season;
+	}
+	public void setEpisodeNum(Integer episodeNum) {
+		this.episodeNum = episodeNum;
 	}
 	
 }
