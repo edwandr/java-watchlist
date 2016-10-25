@@ -1,22 +1,130 @@
 package appPackage;
 
-import java.util.ArrayList;
+import java.io.*;
+import java.time.LocalDate;
+import java.util.*;
+
 
 public class User{
 	
-	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
+	public static ArrayList<TVShow> favorite = new ArrayList<TVShow>();
+	private static String favoriteId;
 	
-	public User()
-	{
+	// Sauvegarder l'utilisateur à la fermeture 
+	public static void saveUser() {
+		favoriteId = ""; 
+		Iterator<TVShow> it = favorite.iterator();
+        while (it.hasNext()) {
+            favoriteId += it.next().getId().toString() + ";";
+        }
+		
+		try {
+			PrintWriter out = new PrintWriter("sauvegarde.txt");
+			out.println(favoriteId);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
-	
-	public void addFavorite(Integer id)
-	{
-		TVShow newFavorite = new TVShow(id);
-		favorite.add(newFavorite);	
+	// Récupérer l'utilisateur (ses favoris) à l'ouverture
+	public void loadUser() {
+	    try {
+	    	BufferedReader reader = new BufferedReader(new FileReader ("sauvegarde.txt"));
+		    String         line = null;
+		    StringBuilder  stringBuilder = new StringBuilder();
+		    String         ls = System.getProperty("line.separator");
+	        while((line = reader.readLine()) != null) {
+	            stringBuilder.append(line);
+	            stringBuilder.append(ls);
+	        }
+	        favoriteId = stringBuilder.toString();
+	        reader.close();
+	    } catch (IOException e) {
+			e.printStackTrace();
+		} 
+	    
+	    favoriteId = favoriteId.replaceAll("\n", "").replaceAll(" " ,"");
+		String[] favoriteArray = favoriteId.split("\\;",-1);
+		for (int i = 0 ; i < favoriteArray.length - 1; i++) {
+			addFavorite(Integer.parseInt(favoriteArray[i]));
+		}
 	}
-	
+
+	// Renvoyer le tableau des favoris trié
+	public static ArrayList<TVShow> getFavorite(String sortType)
+	{
+			ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
+			if ( "alphabetical".equals(sortType) ) {
+				Collections.sort(favoriteClone, new Comparator<TVShow>() {
+			        @Override
+			        public int compare(TVShow TVShow1, TVShow TVShow2) {
+			        	String name1 = (String)TVShow1.getName();
+			            String name2 = (String)TVShow2.getName();
+			            int result = name1.compareTo(name2);
+			            return result;
+			        }
+			    });
+			}		
+		     else if ("popularity".equals(sortType)) {
+		    	 Collections.sort(favoriteClone, new Comparator<TVShow>() {
+				        @Override
+				        public int compare(TVShow TVShow1, TVShow TVShow2) {
+				        	Double popularity1 = (Double)TVShow1.getPopularity();
+				        	Double popularity2 = (Double)TVShow2.getPopularity();
+				            int result = popularity1.compareTo(popularity2);
+				            if(result == 0){
+				            	String name1 = (String)TVShow1.getName();
+					            String name2 = (String)TVShow2.getName();
+					            int result2 = name1.compareTo(name2);
+					            return result2;
+				            }
+				            return result;
+				        }
+				    });	    	 	    
+		     }
+		     else if ("airingTime".equals(sortType)) {
+		    	 
+		    	 Collections.sort(favoriteClone, new Comparator<TVShow>() {
+				        @Override
+				        public int compare(TVShow TVShow1, TVShow TVShow2) {
+				        	LocalDate nextAiringTime1 = TVShow1.getNextAiringTime();
+				        	LocalDate nextAiringTime2 = TVShow2.getNextAiringTime();
+				        	if (nextAiringTime1 == null){
+				        		if (nextAiringTime2 == null){
+				        			String name1 = (String)TVShow1.getName();
+						            String name2 = (String)TVShow2.getName();
+						            int result2 = name1.compareTo(name2);
+						            return result2;
+				        		}
+				        		else {
+				        			return -1;
+				        		}
+				        	}
+				        	else if (nextAiringTime2 == null){
+				        		return 1;
+				        	}
+				        	else {
+				        		int result = nextAiringTime1.compareTo(nextAiringTime2);
+					            if(result == 0){
+					            	String name1 = (String)TVShow1.getName();
+						            String name2 = (String)TVShow2.getName();
+						            int result2 = name1.compareTo(name2);
+						            return result2;
+					            }
+					            return result;
+				        	}
+				            
+				        }
+				    });	    	 	    
+		     }
+		     else if ("lastAdded".equals(sortType)) {}
+			return favoriteClone;
+	}
+	public User()
+	{	
+	}
+	// Donner une description des favoris
 	public String AllFavtoString ()
 	{
 		String description = "Favorite TV Shows : \n \n";
@@ -26,14 +134,35 @@ public class User{
 	    }  
 		return description;
 	}
-	
-	public void removeFavorite(Integer id)
+	//Supprimer un favoris
+	public static void removeFavorite(Integer id)
 	{
-		for(int i = 0; i < favorite.size(); i++){
-			if (favorite.get(i).getId() == id);
-				favorite.remove(i);
-		}
+		Iterator<TVShow> it = favorite.iterator();
+        while (it.hasNext()) {
+            if (it.next().getId().equals(id)) {
+                it.remove();                
+            }
+        }
+        User.saveUser();
 	}
-	
-	
+	//Ajouter un favoris
+	public static void addFavorite(Integer id)
+	{
+		User.removeFavorite(id);
+		TVShow newFavorite = new TVShow(id);
+		favorite.add(newFavorite);	
+		User.saveUser();
+	}
+
+	//Test si la série est déjà dans favorites 
+	public static boolean isInFavorite(Integer id){
+		boolean result = false ;
+		Iterator<TVShow> it = favorite.iterator();
+        while (it.hasNext()) {
+            if (it.next().getId().equals(id)) {
+                result = true ;                
+            }
+        }
+		return result;
+	}
 }

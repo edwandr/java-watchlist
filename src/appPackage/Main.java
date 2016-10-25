@@ -39,25 +39,33 @@ public class Main extends Application{
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("Java-watchlist");
+		primaryStage.setTitle("JavaWatchlist");
         Group root = new Group();
         Scene scene = new Scene(root, 500, 500, Color.WHITE);
         primaryStage.setWidth(1000);
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
-        
-        UIApplication application = new UIApplication();
-        root.getChildren().add(application);
 
-        UIMenu menu = new UIMenu();
+		User user = new User();
+
+        UIApplication application = new UIApplication(scene, user);
+		root.getChildren().add(application);
+
+		ArrayList<UIDynamicLink> links = new ArrayList<>();
+		UIDynamicLink shows = new UIDynamicLink("Featured shows", "featured");
+        shows.addObserver(application);
+		links.add(shows);
+		UIDynamicLink favorites = new UIDynamicLink("Favorite shows", "favorites");
+		favorites.addObserver(application);
+		links.add(favorites);
+
+		UIMenu menu = new UIMenu(links);
         application.setLeft(menu);
 
 		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
-		
-		Thread.sleep(1000);
-        UIListPane listPane = new UIListPane(tvshows);
+        UIListPane listPane = new UIListPane(tvshows, application, scene);
         application.setCenter(listPane);
-        
+                
         UISearchButton search = new UISearchButton("Search");
         search.addObserver(application);
         UISearchBar searchbar = new UISearchBar(search);

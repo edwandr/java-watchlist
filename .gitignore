@@ -1,1 +1,5 @@
 *.class
+.idea/
+/bin/*
+sauvegarde.txt
+*.iml
