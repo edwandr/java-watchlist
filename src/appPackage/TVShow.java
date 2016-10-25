@@ -21,10 +21,12 @@ public class TVShow {
 	private Integer nbSeasons;
 	private String countryOfOrigin;
 	private String overview;
+	private String posterPath;
 	private BufferedImage poster;
 	private Double popularity;
 	private Double voteAverage;
 	private Integer voteCount;
+	private ArrayList<TVSeason> seasons = new ArrayList<TVSeason>();
 	
 	private LocalDate nextAiringTime;
 	
@@ -76,10 +78,11 @@ public class TVShow {
 		try {
 			//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
 			String sizeOption = "w185";
-			this.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+json.optString("poster_path")));
-		} catch (Exception e) {
+			this.posterPath = json.optString("poster_path");
+			this.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+posterPath));
+		} catch (Exception e) {}
 			
-		}
+		
 
 		//If the show is still in production, get the next airing time
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
@@ -113,13 +116,17 @@ public class TVShow {
 			this.nextAiringTime = LocalDate.parse(upcomingEpisode);
 			
 			for (int i=episodes.length()-2;i>=0;i--){
-				upcomingEpisode = episodes.getJSONObject(episodes.length()-1).optString("air_date", "1970-01-01");
+				upcomingEpisode = episodes.getJSONObject(i).optString("air_date", "1970-01-01");
 				//Check the other episodes. We look for the nearest upcoming episode that is still in the future.
-				if(LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now()))
+				if(LocalDate.parse(upcomingEpisode).isBefore(this.nextAiringTime)&&LocalDate.parse(upcomingEpisode).isAfter(LocalDate.now().minusDays(1)))
 						this.nextAiringTime=LocalDate.parse(upcomingEpisode);
 			}
 		}
-		
+		//Make an array with all the seasons 
+		for(Integer i=0;i<json.getJSONArray("seasons").length();i++){
+			TVSeason newSeason = new TVSeason(id,nbSeasons);
+			seasons.add(newSeason);
+		}
 	}
 	
 	
@@ -172,7 +179,7 @@ public class TVShow {
 		descriptionString+= "Popularity: "+this.popularity+"\n";
 		descriptionString+= "User rating: "+this.voteAverage+"/10 ("+this.voteCount+" votes)\n";
 		descriptionString+= "Latest episode: "+this.nextAiringTime+"\n";
-		descriptionString+= "-----------------------------------------";
+		descriptionString+= "-----------------------------------------\n";
 		return descriptionString;
 	}
 
@@ -230,5 +237,9 @@ public class TVShow {
 
 	public LocalDate getNextAiringTime() {
 		return this.nextAiringTime;
+	}
+	
+	public ArrayList<TVSeason> getSeasons(){
+		return seasons;
 	}
 }
