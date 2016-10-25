@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +24,17 @@ public class Main extends Application{
 
 	public static void main(String... args) {
 		Application.launch(args);
-		//ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
+		
+		/*
+		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
+		Iterator<TVShow> it = tvshows.iterator();
+        while (it.hasNext()) {
+        	TVShow show=it.next();
+            System.out.println(show.toString());
+            System.out.println("PosterW: " + show.getPoster().getWidth());
+        }
+        */
+		
 	}
 
 	@Override
