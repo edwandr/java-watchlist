@@ -15,7 +15,7 @@ public class UIFocusPane extends BorderPane implements Observer {
 	    
 	    ImageView poster = new ImageView(SwingFXUtils.toFXImage(this.focusedShow.getPoster(), null));
 	    poster.setPreserveRatio(true);
-	    poster.setFitWidth(385);
+	    poster.setFitWidth(370);
 	    BorderPane imageContainer = new BorderPane();
 	    imageContainer.setPadding(new Insets(10, 10, 10, 10));
 	    imageContainer.setCenter(poster);

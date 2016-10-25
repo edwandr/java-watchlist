@@ -4,6 +4,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -11,20 +13,21 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-public class UIDetailPane extends VBox {
+public class UIDetailPane extends ScrollPane {
 	public UIDetailPane(TVShow tvshow, UIFavoriteButton favButton){
+		VBox details = new VBox();
 		// Adding title
 	    Text title = new Text(tvshow.getName());
 	    title.setFont(Font.font("Verdana", 40));
 	   	VBox.setMargin(title, new Insets(15, 0, 0, 20));
 	   	title.setWrappingWidth(420);
-	   	this.getChildren().add(title);
+		details.getChildren().add(title);
 	    
 	   	// Adding description of the tvshow
 	    Text description = new Text(tvshow.getOverview());
 	    VBox.setMargin(description, new Insets(15, 0, 0, 20));
 	    description.setWrappingWidth(420);
-	    this.getChildren().add(description);
+		details.getChildren().add(description);
 	    
 	    // Adding creator and genres with bold style
 	    Text t1 = new Text("Created by : ");
@@ -38,18 +41,25 @@ public class UIDetailPane extends VBox {
 	    extra.getChildren().addAll(t1, author, t2, genre);
 	    VBox.setMargin(extra, new Insets(15, 0, 0, 20));
 	    extra.setPrefWidth(420);
-	    this.getChildren().add(extra);
+		details.getChildren().add(extra);
 
 	    // Adding next episode date 
-	    Text nextEpisode = new Text("The next episode will be available on " + tvshow.getNextAiringTime().toString());
+	    Text nextEpisode = new Text("The next episode will be available episode will be available " + tvshow.getNextAiringTime().toString());
 	    nextEpisode.setFill(Color.RED);
 	    VBox.setMargin(nextEpisode, new Insets(15, 0, 0, 20));
 	    nextEpisode.setWrappingWidth(420);
-	    this.getChildren().add(nextEpisode);
+		details.getChildren().add(nextEpisode);
 		
 	    // Adding favorite button
-		VBox.setMargin(favButton, new Insets(15, 0, 0, 20));
-		this.getChildren().add(favButton);
+		VBox.setMargin(favButton, new Insets(15, 0, 20, 20));
+		details.getChildren().add(favButton);
+		
+		details.setPrefSize(465, 600);
+
+		this.setStyle("-fx-background-color:transparent;");
+		this.setFitToWidth(true);
+		this.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+		this.setContent(details);
 
 
 		//Setting an action for the favorite button

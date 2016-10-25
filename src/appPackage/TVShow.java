@@ -121,7 +121,7 @@ public class TVShow {
 			}
 
 			this.nextEpisodeisSoon = Boolean.FALSE;
-			if (LocalDate.now().isAfter(this.nextAiringTime.minusDays(2)) && this.nextAiringTime.isAfter(LocalDate.now())) {
+			if (LocalDate.now().isAfter(this.nextAiringTime.minusDays(8)) && this.nextAiringTime.isAfter(LocalDate.now())) {
 				this.nextEpisodeisSoon = Boolean.TRUE;
 			}
 		}
