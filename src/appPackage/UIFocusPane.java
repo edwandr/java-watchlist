@@ -1,6 +1,5 @@
 package appPackage;
 
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -13,14 +12,17 @@ public class UIFocusPane extends BorderPane implements Observer {
 		
 		setFocusedShow(tVShow);
 	    
-	    ImageView poster = new ImageView(SwingFXUtils.toFXImage(this.focusedShow.getPoster(), null));
-	    poster.setPreserveRatio(true);
+	    UIDynamicImage poster = new UIDynamicImage(tVShow);
+		poster.setPreserveRatio(true);
 	    poster.setFitWidth(370);
-	    BorderPane imageContainer = new BorderPane();
+		BorderPane imageContainer = new BorderPane();
 	    imageContainer.setPadding(new Insets(10, 10, 10, 10));
 	    imageContainer.setCenter(poster);
 	    
 	    this.setRight(imageContainer);
+	    
+	    poster.setUpController();
+	    tVShow.fetchBigPoster();
 
 		if (User.isInFavorite(tVShow.getId())){
 			UIFavoriteButton favButton = new UIFavoriteButton("Remove Favorite", Boolean.FALSE);

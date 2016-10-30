@@ -1,9 +1,9 @@
 package appPackage;
 
-import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.scene.image.Image;
 
 public class TVShow{
 
@@ -28,8 +30,8 @@ public class TVShow{
 	private String countryOfOrigin;
 	private String overview;
 	private String posterPath;
-	private BufferedImage poster;
-	private BufferedImage bigPoster;
+	private Image poster;
+	private Image bigPoster;
 	private Double popularity;
 	private Double voteAverage;
 	private Integer voteCount;
@@ -37,7 +39,12 @@ public class TVShow{
 
 	private LocalDate nextAiringTime;
 	private Boolean nextEpisodeisSoon;
+	
+	//To notify when images are loaded
+	private List<Observer> observers = new ArrayList<Observer>();
 
+	static ExecutorService posterThreadPool = Executors.newFixedThreadPool(8);
+	
 	public TVShow() {
 	}
 
@@ -90,7 +97,7 @@ public class TVShow{
 			//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
 			String sizeOption = "w185";
 			this.posterPath = json.optString("poster_path");
-			this.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+posterPath));
+			this.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+posterPath);
 		} catch (Exception e) {
 
 		}
@@ -106,14 +113,51 @@ public class TVShow{
 	}
 	*/
 
-	public void fetchBigPoster(){
-		try {
-			//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
-			String sizeOption = "w500";
-			this.bigPoster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+this.posterPath));
-		} catch (Exception e) {
+	public void fetchPoster(){
+		if(this.poster!=null) return;
+		
+		TVShow show = this;
+		
+		Task<Void> task = new Task<Void>() {
+		    @Override protected Void call() throws Exception {
+				try {
+					//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+					String sizeOption = "w185";
+					show.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
+				} catch (Exception e) {
 
-		}
+				}
+				
+				show.notifyObservers(show);
+		    	return null;
+		    }
+		};
+		
+		Platform.runLater(task);
+		
+	}
+	
+	public void fetchBigPoster(){
+		if(this.bigPoster!=null) return;
+		
+		//To pass the show to the anonymous class of task
+		TVShow show = this;
+		
+		Task<Void> task = new Task<Void>() {
+		    @Override protected Void call() throws Exception {
+				try {
+					//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+					String sizeOption = "w500";
+					show.bigPoster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
+				} catch (Exception e) {return null;}
+				
+				show.notifyObservers(show);
+		    	return null;
+		    }
+		};
+		
+		Platform.runLater(task);
+		
 	}
 
 	public void fetchNextAiringTime() {
@@ -186,7 +230,8 @@ public class TVShow{
 				result.voteCount = json.optInt("vote_count");
 				result.voteAverage = json.optDouble("vote_average");
 				result.inProduction = json.optBoolean("in_production");
-
+				result.posterPath = json.optString("poster_path");
+				
 
 				//Create a string representing all creators
 				result.creator="";
@@ -220,7 +265,7 @@ public class TVShow{
 						try {
 							//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
 							String sizeOption = "w185";
-							result.poster = ImageIO.read(new URL("http://image.tmdb.org/t/p/"+sizeOption+json.optString("poster_path")));
+							result.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+result.posterPath);
 						} catch (Exception e) {
 
 						}
@@ -232,7 +277,7 @@ public class TVShow{
 				    }
 				};
 
-				threadSubPool.execute(task);
+				//threadSubPool.execute(task);
 				return null;
 			}
 		};
@@ -241,7 +286,24 @@ public class TVShow{
 
 		return result;
 	}
+	
+	public void addObserver(Observer o){
+		getObservers().add(o);
+	}
+	
+	public void notifyObservers(TVShow tVShow){
+		for (Observer observer : getObservers()) {
+	         observer.update(tVShow);
+	      }
+	}
 
+	public List<Observer> getObservers() {
+		return observers;
+	}
+
+	public void setObservers(List<Observer> observers) {
+		this.observers = observers;
+	}
 
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
@@ -367,14 +429,11 @@ public class TVShow{
 		return overview;
 	}
 
-	public BufferedImage getPoster() {
+	public Image getPoster() {
 		return poster;
 	}
 
-	public BufferedImage getBigPoster(){
-		if(this.bigPoster==null){
-			this.fetchBigPoster();
-		}
+	public Image getBigPoster(){
 		return this.bigPoster;
 	}
 

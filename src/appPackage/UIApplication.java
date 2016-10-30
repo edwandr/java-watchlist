@@ -8,15 +8,12 @@ import javafx.scene.layout.BorderPane;
 public class UIApplication extends BorderPane implements Observer {
 
 	Scene scene;
-	User user;
 
-	public UIApplication(Scene scene, User user) {
+	public UIApplication(Scene scene) {
 		this.scene = scene;
-		this.user = user;
-		// Récupération de toutes les données utilisateur à l'initialisation de l'application
-		this.user.loadUser();
 	}
-
+	
+	
 	public void update(String query) {
 		ArrayList<TVShow> searchList = TVShow.searchTVShows(query);
 		UIListPane newListPane = new UIListPane(searchList, this, this.scene, Boolean.FALSE);
@@ -30,7 +27,7 @@ public class UIApplication extends BorderPane implements Observer {
 			this.setCenter(newListPane);
 		}
 		else {
-			UIListPane newListPane = new UIListPane(User.favorite, this, this.scene, Boolean.TRUE);
+			UIListPane newListPane = new UIListPane(User.getFavorite("airingTime"), this, this.scene, Boolean.TRUE);
 			this.setCenter(newListPane);
 		}
 

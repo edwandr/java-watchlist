@@ -1,7 +1,10 @@
 package appPackage;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -34,9 +37,9 @@ public class Main extends Application{
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
 
-		User user = new User();
+        User.loadUser();
 
-        UIApplication application = new UIApplication(scene, user);
+        UIApplication application = new UIApplication(scene);
 		root.getChildren().add(application);
 
 		ArrayList<UIDynamicLink> links = new ArrayList<>();
@@ -62,6 +65,11 @@ public class Main extends Application{
         primaryStage.setScene(scene);
         primaryStage.show();
         
+	}
+	
+	@Override
+	public void stop(){
+		TVShow.posterThreadPool.shutdownNow();
 	}
 	
 	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
