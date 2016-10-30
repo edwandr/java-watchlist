@@ -3,7 +3,6 @@ package appPackage;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,67 +27,61 @@ public class UIListPane extends ScrollPane {
 		Iterator<TVShow> it = tvshows.iterator();
 		
 		while (it.hasNext()){
-			try {
-				TVShow show = it.next();
-				UIDynamicImage poster = new UIDynamicImage(show);
-				poster.setUpController();
-				
-				poster.addObserver(application);
-				
-				show.fetchPoster();
-				poster.setPreserveRatio(true);
-				poster.setFitWidth(185);
-				
+			TVShow show = it.next();
+			UIDynamicImage poster = new UIDynamicImage(show);
+			poster.setUpController();
 
-				BorderPane container = new BorderPane();
+			poster.addObserver(application);
 
-				if (notification==Boolean.TRUE && show.getNextEpisodeisSoon()==Boolean.TRUE) {
-					container.setCenter(new UINotification(poster));
-				}
-				else{
-					container.setCenter(poster);
-				}
-				Label title = new Label(show.getName());
-				title.setMaxWidth(180);
-				title.setAlignment(Pos.BASELINE_CENTER);
-				container.setBottom(title);
-				
-		    	list.getChildren().addAll(container);
-		    	
+			show.fetchPoster();
+			poster.setPreserveRatio(true);
+			poster.setFitWidth(185);
 
-		    	//Setting an action on the click of the poster
-		    	poster.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
-		    	     @Override
-		    	     public void handle(MouseEvent event) {
-		    	    	 poster.notifyObservers(poster.getTVShow());
-		    	     }
-		    	});
+			BorderPane container = new BorderPane();
 
-				//Setting cursor as pointer when mouse enter a poster
-				poster.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
-
-					@Override
-					public void handle(MouseEvent event) {
-                        scene.setCursor(Cursor.HAND);
-					}
-				});
-
-                //Setting cursor back as normal when mouse exit a poster
-                poster.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
-
-                    @Override
-                    public void handle(MouseEvent event) {
-                        scene.setCursor(Cursor.DEFAULT);
-                    }
-                });
+			if (notification==Boolean.TRUE && show.getNextEpisodeisSoon()==Boolean.TRUE) {
+				container.setCenter(new UINotification(poster));
 			}
-			catch (NullPointerException e)
-			{
-				// TODO Mettre une image par défaut si le poster n'est pas trouvé
+			else{
+				container.setCenter(poster);
 			}
+			Label title = new Label(show.getName());
+			title.setMaxWidth(180);
+			title.setAlignment(Pos.BASELINE_CENTER);
+			container.setBottom(title);
+
+			list.getChildren().addAll(container);
+
+
+			//Setting an action on the click of the poster
+			poster.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+				@Override
+				public void handle(MouseEvent event) {
+					poster.notifyObservers(poster.getTVShow());
+				}
+			});
+
+			//Setting cursor as pointer when mouse enter a poster
+			poster.addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
+
+				@Override
+				public void handle(MouseEvent event) {
+					scene.setCursor(Cursor.HAND);
+				}
+			});
+
+			//Setting cursor back as normal when mouse exit a poster
+			poster.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
+
+				@Override
+				public void handle(MouseEvent event) {
+					scene.setCursor(Cursor.DEFAULT);
+				}
+			});
 		}
-	    
+
 	    list.setPrefSize(840, 600);
 
         this.setStyle("-fx-background-color:transparent;");

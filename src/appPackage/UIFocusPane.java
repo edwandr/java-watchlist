@@ -1,7 +1,6 @@
 package appPackage;
 
 import javafx.geometry.Insets;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 
 public class UIFocusPane extends BorderPane implements Observer {
@@ -16,6 +15,7 @@ public class UIFocusPane extends BorderPane implements Observer {
 		poster.setPreserveRatio(true);
 	    poster.setFitWidth(370);
 		BorderPane imageContainer = new BorderPane();
+		//TODO Make the padding match the background in color
 	    imageContainer.setPadding(new Insets(10, 10, 10, 10));
 	    imageContainer.setCenter(poster);
 	    

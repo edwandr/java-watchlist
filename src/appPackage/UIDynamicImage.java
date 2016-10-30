@@ -10,19 +10,19 @@ public class UIDynamicImage extends ImageView{
 	private List<Observer> observers = new ArrayList<Observer>();
 	private TVShow tVShow;
 	
-	static Image defaultImage = new Image("imageUnavailable.jpg");
+	//TODO Make a less fugly image
+	static Image defaultImage = new Image("ImageUnavailable.jpg");
 	
 	//Should the UIDynamicImage create its Controller on its own ??
 	
+    /**
+     * Allocates a new UIDynamicImage with default "Unavailable Image" image
+     *
+     * @param tvShow reference used for observers
+     */
 	public UIDynamicImage(TVShow tVShow){
 		super(defaultImage);
 		this.tVShow=tVShow;
-	}
-	
-	@Deprecated
-	public UIDynamicImage(Image poster, TVShow tVShow){
-		this.setImage(poster);
-		this.setTVShow(tVShow);
 	}
 	
 	public void setUpController(){

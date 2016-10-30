@@ -10,6 +10,9 @@ public class User{
 	private static ArrayList<TVShow> favorite = new ArrayList<TVShow>();
 	private static String favoriteId;
 	
+	//TODO update model to use an instance of user
+	private User currentUser;
+	
 	// Sauvegarder l'utilisateur à la fermeture 
 	public static void saveUser() {
 		favoriteId = "";
@@ -48,7 +51,7 @@ public class User{
 	    favoriteId = favoriteId.replaceAll("\n", "").replaceAll(" " ,"");
 		String[] favoriteArray = favoriteId.split("\\;",-1);
 		for (int i = 0 ; i < favoriteArray.length - 1; i++) {
-			addFavorite(Integer.parseInt(favoriteArray[i]));
+			favorite.add(TVShow.fetchFromID(Integer.parseInt(favoriteArray[i])));
 		}
 	}
 
@@ -129,7 +132,7 @@ public class User{
 	}
 	
 	// Donner une description des favoris
-	public String AllFavtoString ()
+	public String AllFavtoString()
 	{
 		String description = "Favorite TV Shows : \n \n";
 		for(int i = 0; i < favorite.size(); i++)
@@ -153,7 +156,7 @@ public class User{
 	public static void addFavorite(Integer id)
 	{
 		User.removeFavorite(id);
-		TVShow newFavorite = new TVShow(id);
+		TVShow newFavorite = TVShow.fetchFromID(id);
 		favorite.add(newFavorite);	
 		User.saveUser();
 	}
@@ -171,7 +174,7 @@ public class User{
 	}
 	
 	public ArrayList<TVShow> getFavoriteShows(){
-		return this.favorite;
+		return User.favorite;
 	}
 	
 }

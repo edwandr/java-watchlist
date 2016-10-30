@@ -1,10 +1,7 @@
 package appPackage;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -69,10 +66,18 @@ public class Main extends Application{
 	
 	@Override
 	public void stop(){
-		TVShow.posterThreadPool.shutdownNow();
+		TVShow.shutdownThreadPoolNow();
 	}
 	
+	//TODO Optional: Make the calls with different keys to avoid lockup.
+	//TODO Optional: Put all of the API calling functions in a specific class
+	static Integer numberOfAPICalls = new Integer(0);
+	
 	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
+		synchronized(numberOfAPICalls){
+			numberOfAPICalls++;
+			System.out.println("Calling the API: Call #"+numberOfAPICalls);
+		}
 		StringBuilder sb = new StringBuilder();
 		URLConnection urlConn = null;
 		InputStreamReader in = null;
