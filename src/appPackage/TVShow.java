@@ -1,20 +1,16 @@
 package appPackage;
 
-import java.net.URL;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 
@@ -43,9 +39,11 @@ public class TVShow{
 	//To notify when images are loaded
 	private List<Observer> observers = new ArrayList<Observer>();
 
-	static ExecutorService posterThreadPool = Executors.newFixedThreadPool(8);
+	private static ExecutorService tvShowThreadPool = Executors.newFixedThreadPool(8);
+	private static Image noPosterImage = new Image("NoPoster.png");
 	
 	public TVShow() {
+		
 	}
 
 	public TVShow(Integer id){
@@ -105,14 +103,6 @@ public class TVShow{
 		this.fetchNextAiringTime();
 	}
 
-
-	/*
-	//TODO Make a function to clone a TVShow
-	public TVShow(TVShow show){
-		this.name = show.name;
-	}
-	*/
-
 	public void fetchPoster(){
 		if(this.poster!=null) return;
 		
@@ -120,20 +110,36 @@ public class TVShow{
 		
 		Task<Void> task = new Task<Void>() {
 		    @Override protected Void call() throws Exception {
-				try {
-					//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
-					String sizeOption = "w185";
-					show.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
-				} catch (Exception e) {
-
-				}
+		    	
+		    	//Waiting for the posterPath to be filled by the constructor but not indefinitely
+		    	int counter=0;
+		    	while(show.posterPath==null && counter<150){
+		    		Thread.sleep(100);
+		    		counter++;
+		    	}
+		    	if(counter==150) return null;
+		    	
+		    	//Dealing with shows that have no poster in the database
+		    	if(show.posterPath.length()<=1){
+		    		show.poster=noPosterImage;
+		    		show.notifyObservers(show);
+		    		return null;
+		    	}
+		    	
+				//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+				String sizeOption = "w185";
+				show.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
+				
+				//TODO Parameter that simulate network lag with following function
+				//Random rng = new Random();
+				//Thread.sleep(rng.nextInt(1500));
 				
 				show.notifyObservers(show);
 		    	return null;
 		    }
 		};
 		
-		Platform.runLater(task);
+		tvShowThreadPool.execute(task);
 		
 	}
 	
@@ -156,10 +162,12 @@ public class TVShow{
 		    }
 		};
 		
-		Platform.runLater(task);
+		tvShowThreadPool.execute(task);
 		
 	}
 
+	//TODO Put the computation on a separate thread
+	//TODO Avoid an output error when the show was improperly fetched or API is inaccessible and retry later
 	public void fetchNextAiringTime() {
 		//If the show is still in production, get the next airing time
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
@@ -207,9 +215,15 @@ public class TVShow{
 			}
 		}
 	}
+	
+	public static TVShow fetchFromID(Integer showID){
+		return TVShow.fetchFromID(showID, tvShowThreadPool);
+	}
 
-	public static TVShow fetchFromID(Integer showID, ExecutorService threadPool, ExecutorService threadSubPool){
+	//TODO Retry later if the API access was unsuccessful
+	public static TVShow fetchFromID(Integer showID, ExecutorService threadPool){
 		TVShow result = new TVShow();
+		result.id=showID;
 
 		Task<Void> creatorTask = new Task<Void>() {
 		    @Override protected Void call() throws Exception {
@@ -220,12 +234,11 @@ public class TVShow{
 					json = Main.getJSONAtURL(url);
 				}catch(JSONException e){return null;}
 
-				String defaultString = "N/A";
-				result.name = json.optString("name", defaultString);
+				
+				if(result.name==null) result.name = json.optString("name", "[Name unavailable]");
 				result.nbEpisodes = json.optInt("number_of_episodes");
-				result.overview = json.optString("overview", defaultString);
+				result.overview = json.optString("overview", "No overview available.");
 				result.popularity = json.optDouble("popularity");
-				result.id = json.optInt("id");
 				result.nbSeasons = json.optInt("number_of_seasons");
 				result.voteCount = json.optInt("vote_count");
 				result.voteAverage = json.optDouble("vote_average");
@@ -252,32 +265,14 @@ public class TVShow{
 				//Create a string representing all countries of origin
 				result.countryOfOrigin="";
 				for(int i=0;i<json.getJSONArray("origin_country").length();i++){
-					result.countryOfOrigin+=json.getJSONArray("origin_country").optString(i, defaultString);
+					result.countryOfOrigin+=json.getJSONArray("origin_country").optString(i);
 					//Add a comma if it is not the last name of the array
 					if(i<json.getJSONArray("origin_country").length()-1) result.countryOfOrigin+=", ";
 				}
 
-				//For test
+				//Verbose
 				System.out.println(String.format("%-20s: text fields filled", result.name));
-
-				Task<Void> task = new Task<Void>() {
-				    @Override protected Void call() throws Exception {
-						try {
-							//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
-							String sizeOption = "w185";
-							result.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+result.posterPath);
-						} catch (Exception e) {
-
-						}
-						//For test
-						System.out.println(String.format("%-20s: poster retrieved", result.name));
-
-
-				    	return null;
-				    }
-				};
-
-				//threadSubPool.execute(task);
+				
 				return null;
 			}
 		};
@@ -307,8 +302,7 @@ public class TVShow{
 
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
-		ExecutorService threadPool = Executors.newFixedThreadPool(8);
-		ExecutorService threadSubPool = Executors.newFixedThreadPool(8);
+		ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
 		String url = "https://api.themoviedb.org/3/tv/popular?api_key="+Main.apiKey;
 		JSONObject json;
@@ -319,32 +313,19 @@ public class TVShow{
 		}
 
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			list.add(TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool, threadSubPool));
+			TVShow show = TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool);
+			show.name = json.getJSONArray("results").getJSONObject(i).optString("name");
+			list.add(show);
 		}
-
-		try {
-			//Ask the first thread pool to shutdown
-			threadPool.shutdown();
-			if(!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
-				System.out.println("Main Thread Pool has timed out !");
-				threadPool.shutdownNow();
-			}
-			//Since first pool is shutdown, second pool is populated. We now wait for it to shutdown.
-			threadSubPool.shutdown();
-			if(!threadSubPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
-				System.out.println("Sub Thread Pool has timed out !");
-				threadSubPool.shutdownNow();
-			}
-		} catch (InterruptedException e) {
-
-		}
+		
+		threadPool.shutdown();
 		return list;
 	}
-
+	
+	//TODO Deal with shows that have no posters (ex search "hello")
 	public static ArrayList<TVShow> searchTVShows(String query){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
-		ExecutorService threadPool = Executors.newFixedThreadPool(8);
-		ExecutorService threadSubPool = Executors.newFixedThreadPool(8);
+		ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
 		String url = "https://api.themoviedb.org/3/search/tv?api_key="+Main.apiKey+"&query="+query;
 		JSONObject json;
@@ -355,26 +336,12 @@ public class TVShow{
 		}
 
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			//list.add(new TVShow(json.getJSONArray("results").getJSONObject(i).optInt("id")));
-			list.add(TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool, threadSubPool));
+			TVShow show = TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool);
+			show.name = json.getJSONArray("results").getJSONObject(i).optString("name");
+			list.add(show);
 		}
 
-		try {
-			//Ask the first thread pool to shutdown
-			threadPool.shutdown();
-			if(!threadPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
-				System.out.println("Main Thread Pool has timed out !");
-				threadPool.shutdownNow();
-			}
-			//Since first pool is shutdown, second pool is populated. We now wait for it to shutdown.
-			threadSubPool.shutdown();
-			if(!threadSubPool.awaitTermination(1000, TimeUnit.MILLISECONDS)){
-				System.out.println("Sub Thread Pool has timed out !");
-				threadSubPool.shutdownNow();
-			}
-		} catch (InterruptedException e) {
-
-		}
+		threadPool.shutdown();
 		return list;
 	}
 
@@ -467,4 +434,9 @@ public class TVShow{
 	public ArrayList<TVSeason> getSeasons(){
 		return seasons;
 	}
+	
+	public static void shutdownThreadPoolNow(){
+		tvShowThreadPool.shutdownNow();
+	}
+	
 }

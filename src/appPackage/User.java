@@ -10,6 +10,9 @@ public class User{
 	private static ArrayList<TVShow> favorite = new ArrayList<TVShow>();
 	private static String favoriteId;
 	
+	//TODO update model to use an instance of user
+	private User currentUser;
+	
 	// Sauvegarder l'utilisateur à la fermeture 
 	public static void saveUser() {
 		favoriteId = "";
@@ -48,79 +51,84 @@ public class User{
 	    favoriteId = favoriteId.replaceAll("\n", "").replaceAll(" " ,"");
 		String[] favoriteArray = favoriteId.split("\\;",-1);
 		for (int i = 0 ; i < favoriteArray.length - 1; i++) {
-			addFavorite(Integer.parseInt(favoriteArray[i]));
+			favorite.add(TVShow.fetchFromID(Integer.parseInt(favoriteArray[i])));
 		}
 	}
+
+	/* TODO Bug Correction: Bug may arise if comparing TVShow whose attributes have not been fetched yet
+	 * Bug first appeared when no name was available, but may not be limited to that field only.
+	 */
 
 	// Renvoyer le tableau des favoris trié
 	public static ArrayList<TVShow> getFavorite(String sortType)
 	{
-			ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
-			if ( "alphabetical".equals(sortType) ) {
-				Collections.sort(favoriteClone, new Comparator<TVShow>() {
-			        @Override
-			        public int compare(TVShow TVShow1, TVShow TVShow2) {
-			        	String name1 = TVShow1.getName();
-			            String name2 = TVShow2.getName();
-			            int result = name1.compareTo(name2);
-			            return result;
-			        }
-			    });
-			}		
-		     else if ("popularity".equals(sortType)) {
-		    	 Collections.sort(favoriteClone, new Comparator<TVShow>() {
-				        @Override
-				        public int compare(TVShow TVShow1, TVShow TVShow2) {
-				        	Double popularity1 = TVShow1.getPopularity();
-				        	Double popularity2 = TVShow2.getPopularity();
-				            int result = popularity1.compareTo(popularity2);
-				            if(result == 0){
-				            	String name1 = TVShow1.getName();
-					            String name2 = TVShow2.getName();
-					            int result2 = name1.compareTo(name2);
-					            return result2;
-				            }
-				            return result;
-				        }
-				    });	    	 	    
-		     }
-		     else if ("airingTime".equals(sortType)) {
-		    	 
-		    	 Collections.sort(favoriteClone, new Comparator<TVShow>() {
-				        @Override
-				        public int compare(TVShow TVShow1, TVShow TVShow2) {
-				        	LocalDate nextAiringTime1 = TVShow1.getNextAiringTime();
-				        	LocalDate nextAiringTime2 = TVShow2.getNextAiringTime();
-				        	if (nextAiringTime1 == null){
-				        		if (nextAiringTime2 == null){
-				        			String name1 = TVShow1.getName();
-						            String name2 = TVShow2.getName();
-						            int result2 = name1.compareTo(name2);
-						            return result2;
-				        		}
-				        		else {
-				        			return -1;
-				        		}
-				        	}
-				        	else if (nextAiringTime2 == null){
-				        		return 1;
-				        	}
-				        	else {
-				        		int result = nextAiringTime1.compareTo(nextAiringTime2);
-					            if(result == 0){
-					            	String name1 = TVShow1.getName();
-						            String name2 = TVShow2.getName();
-						            int result2 = name1.compareTo(name2);
-						            return result2;
-					            }
-					            return result;
-				        	}
-				            
-				        }
-				    });	    	 	    
-		     }
-		     else if ("lastAdded".equals(sortType)) {}
-			return favoriteClone;
+		ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
+		if ( "alphabetical".equals(sortType) ) {
+			Collections.sort(favoriteClone, new Comparator<TVShow>() {
+				@Override
+				public int compare(TVShow TVShow1, TVShow TVShow2) {
+					String name1 = TVShow1.getName();
+					String name2 = TVShow2.getName();
+					int result = name1.compareTo(name2);
+					return result;
+				}
+			});
+		}		
+		else if ("popularity".equals(sortType)) {
+			Collections.sort(favoriteClone, new Comparator<TVShow>() {
+				@Override
+				public int compare(TVShow TVShow1, TVShow TVShow2) {
+					Double popularity1 = TVShow1.getPopularity();
+					Double popularity2 = TVShow2.getPopularity();
+					int result = popularity1.compareTo(popularity2);
+					if(result == 0){
+						String name1 = TVShow1.getName();
+						String name2 = TVShow2.getName();
+						int result2 = name1.compareTo(name2);
+						return result2;
+					}
+					return result;
+				}
+			});	    	 	    
+		}
+		
+		else if ("airingTime".equals(sortType)) {
+
+			Collections.sort(favoriteClone, new Comparator<TVShow>() {
+				@Override
+				public int compare(TVShow TVShow1, TVShow TVShow2) {
+					LocalDate nextAiringTime1 = TVShow1.getNextAiringTime();
+					LocalDate nextAiringTime2 = TVShow2.getNextAiringTime();
+					if (nextAiringTime1 == null){
+						if (nextAiringTime2 == null){
+							String name1 = TVShow1.getName();
+							String name2 = TVShow2.getName();
+							int result2 = name1.compareTo(name2);
+							return result2;
+						}
+						else {
+							return -1;
+						}
+					}
+					else if (nextAiringTime2 == null){
+						return 1;
+					}
+					else {
+						int result = nextAiringTime1.compareTo(nextAiringTime2);
+						if(result == 0){
+							String name1 = TVShow1.getName();
+							String name2 = TVShow2.getName();
+							int result2 = name1.compareTo(name2);
+							return result2;
+						}
+						return result;
+					}
+
+				}
+			});	    	 	    
+		}
+		else if ("lastAdded".equals(sortType)) {}
+		return favoriteClone;
 	}
 	
 	public User()
@@ -129,7 +137,7 @@ public class User{
 	}
 	
 	// Donner une description des favoris
-	public String AllFavtoString ()
+	public String AllFavtoString()
 	{
 		String description = "Favorite TV Shows : \n \n";
 		for(int i = 0; i < favorite.size(); i++)
@@ -153,7 +161,7 @@ public class User{
 	public static void addFavorite(Integer id)
 	{
 		User.removeFavorite(id);
-		TVShow newFavorite = new TVShow(id);
+		TVShow newFavorite = TVShow.fetchFromID(id);
 		favorite.add(newFavorite);	
 		User.saveUser();
 	}
@@ -171,7 +179,7 @@ public class User{
 	}
 	
 	public ArrayList<TVShow> getFavoriteShows(){
-		return this.favorite;
+		return User.favorite;
 	}
 	
 }
