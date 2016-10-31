@@ -1,11 +1,13 @@
 # JavaWatchlist
 Projet de programation avancée 2016 - Romane Marchal, Frédéric Meinnel, Elie Dutheil
 
+![alt tag](https://raw.githubusercontent.com/edwandr/java-watchlist/master/main.png)
+
 ## 1. Installation :
 * Télécharger le zip dans votre espace de travail d'Eclpise. L'utilisation d'eclipse n'est pas obligatoire mais conseillée pour suivre les indications qui vont suivre.
 * Importer la bibliothèque *jfxrt.jar* en cliquant sur *Add External Jars* depuis l'onglet Librairies puis naviguer jusqu'au répertoire d’installation du JDK dans son répertoire jre/lib/ext. Sélectionner le fichier jfxrt.jar et cliquer sur Open.
 * Installer e(fx)eclipse dans le menu *Help → Install New Software*. À droite du champ *Work with*, cliquer sur le bouton *Add* pour ajouter une nouvelle source. Donner un nouveau nom pour ce dépôt (par exemple : e(fx)clipse) et saisir l'URL http://download.eclipse.org/efxclipse/updates-released/1.0.0/site puis cliquer sur OK. Sélectionner le nœud *e(fx)clipse - install* et redémarrer Eclipse.
-* En exécutant la classe Main.java, le programme se lance.
+* Exécuter la classe Main.java pour lancer le programme.
 
 ## 2. Fonctionnalités
 * Liste des séries en vogue dans l'onglet _"featured show"_
