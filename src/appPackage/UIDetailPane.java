@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -60,7 +61,8 @@ public class UIDetailPane extends ScrollPane {
 		VBox.setMargin(seasonTitle, new Insets(15, 0, 5, 20));
 		details.getChildren().add(seasonTitle);
 
-		HBox seasonContainer = new HBox();
+		FlowPane seasonContainer = new FlowPane();
+		seasonContainer.setMaxWidth(420);
 		UISeasonDescription desc = new UISeasonDescription();
 
 
@@ -69,7 +71,7 @@ public class UIDetailPane extends ScrollPane {
 			int index = i;
 			UISeasonButton seasButton = new UISeasonButton(String.valueOf(i));
 			seasonContainer.getChildren().addAll(seasButton);
-			HBox.setMargin(seasButton, new Insets(0, 7, 0, 0));
+			FlowPane.setMargin(seasButton, new Insets(0, 7, 5, 0));
 			seasButton.addObserver(desc);
 
 			//Setting an action for the season button

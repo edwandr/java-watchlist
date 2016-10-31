@@ -15,12 +15,14 @@ public class UIFocusPane extends BorderPane implements Observer {
 		poster.setPreserveRatio(true);
 		poster.setFitHeight(599);
 		BorderPane imageContainer = new BorderPane();
-	    imageContainer.setPadding(new Insets(0, 0, 1, 0)); // Insets(droite,haut,bas,gauche)
+	    imageContainer.setPadding(new Insets(0, 0, 1, 0)); // Insets(haut,droite,bas,gauche)
 	    imageContainer.setCenter(poster);
 	    
 	    this.setRight(imageContainer);
-	    
-	    poster.setUpController();
+		this.setStyle("-fx-background-color: #efefef;");
+
+
+		poster.setUpController();
 	    tVShow.fetchBigPoster();
 
 		if (User.isInFavorite(tVShow.getId())){

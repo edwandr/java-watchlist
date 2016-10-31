@@ -10,7 +10,9 @@ public class UIApplication extends BorderPane implements Observer {
 	Scene scene;
 
 	public UIApplication(Scene scene) {
+
 		this.scene = scene;
+		this.setStyle("-fx-background-color: #efefef;");
 	}
 	
 	

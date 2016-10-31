@@ -11,7 +11,7 @@ public class UIDynamicImage extends ImageView{
 	private TVShow tVShow;
 	
 	//TODO Make a less fugly image
-	static Image defaultImage = new Image("ImageUnavailable.jpg");
+	static Image defaultImage = new Image("loading.gif");
 	
 	//Should the UIDynamicImage create its Controller on its own ??
 	
