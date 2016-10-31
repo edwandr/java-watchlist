@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import java.util.Iterator;
@@ -14,15 +15,25 @@ public class UISeasonDescription extends BorderPane implements Observer{
 
     public void update (TVSeason season) {
         VBox description = new VBox();
-        description.getChildren().addAll(new Label(season.getName()));
 
         Iterator<TVEpisode> it = season.getEpisodes().iterator();
 
         while (it.hasNext()){
             TVEpisode episode = it.next();
-            description.getChildren().addAll(new Text(episode.getName()), new Text(episode.getOverview()));
+
+            Text title = new Text(episode.getName());
+            VBox.setMargin(title, new Insets(0, 0, 7, 0));
+            title.setFont(Font.font("Verdana", 15));
+            title.setWrappingWidth(420);
+
+            Text content = new Text(episode.getOverview());
+            VBox.setMargin(content, new Insets(0, 0, 20, 0));
+            content.setWrappingWidth(420);
+
+            description.getChildren().addAll(title, content);
         }
-        VBox.setMargin(description, new Insets(15, 0, 20, 20));
+
+        VBox.setMargin(description, new Insets(10, 0, 20, 20));
         this.setCenter(description);
     }
 }

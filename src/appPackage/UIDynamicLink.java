@@ -3,15 +3,16 @@ package appPackage;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Button;
 
-public class UIDynamicLink extends Hyperlink {
+public class UIDynamicLink extends Button {
 	private List<Observer> observers = new ArrayList<Observer>();
 	private Boolean type;
 
 	public UIDynamicLink(String title, String type) {
 
 		this.setText(title);
+		this.setPrefWidth(125);
 
 		if (type.equals("featured"))
 		{

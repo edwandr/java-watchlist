@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -54,38 +55,42 @@ public class UIDetailPane extends ScrollPane {
 		VBox.setMargin(favButton, new Insets(15, 0, 20, 20));
 		details.getChildren().add(favButton);
 
-		// Adding Episodes and Seasons
-		Text seasonTitle = new Text("Seasons");
-		seasonTitle.setFont(Font.font("Verdana", 18));
-		VBox.setMargin(seasonTitle, new Insets(15, 0, 5, 20));
-		details.getChildren().add(seasonTitle);
+		if (User.isInFavorite(tvshow.getId())) {
 
-		HBox seasonContainer = new HBox();
-		UISeasonDescription desc = new UISeasonDescription();
+			// Adding Episodes and Seasons
+			Text seasonTitle = new Text("Seasons");
+			seasonTitle.setFont(Font.font("Verdana", 18));
+			VBox.setMargin(seasonTitle, new Insets(15, 0, 5, 20));
+			details.getChildren().add(seasonTitle);
+
+			FlowPane seasonContainer = new FlowPane();
+			seasonContainer.setMaxWidth(420);
+			UISeasonDescription desc = new UISeasonDescription();
 
 
-		for (int i = 1; i<tvshow.getNbSeasons()+1; i++)
-		{
-			int index = i;
-			UISeasonButton seasButton = new UISeasonButton(String.valueOf(i));
-			seasonContainer.getChildren().addAll(seasButton);
-			HBox.setMargin(seasButton, new Insets(0, 7, 0, 0));
-			seasButton.addObserver(desc);
+			for (int i = 1; i<tvshow.getNbSeasons()+1; i++)
+			{
+				int index = i;
+				UISeasonButton seasButton = new UISeasonButton(String.valueOf(i));
+				seasonContainer.getChildren().addAll(seasButton);
+				FlowPane.setMargin(seasButton, new Insets(0, 7, 5, 0));
+				seasButton.addObserver(desc);
 
-			//Setting an action for the season button
-			seasButton.setOnAction(new EventHandler<ActionEvent>() {
+				//Setting an action for the season button
+				seasButton.setOnAction(new EventHandler<ActionEvent>() {
 
-				@Override
-				public void handle(ActionEvent e) {
-					seasButton.notifyObservers(new TVSeason(tvshow.getId(), index));
-				}
-			});
+					@Override
+					public void handle(ActionEvent e) {
+						seasButton.notifyObservers(new TVSeason(tvshow.getId(), index));
+					}
+				});
+			}
+			VBox.setMargin(seasonContainer, new Insets(15, 0, 20, 20));
+			details.getChildren().add(seasonContainer);
+
+			VBox.setMargin(desc, new Insets(15, 0, 20, 20));
+			details.getChildren().add(desc);
 		}
-		VBox.setMargin(seasonContainer, new Insets(15, 0, 20, 20));
-		details.getChildren().add(seasonContainer);
-
-		VBox.setMargin(desc, new Insets(15, 0, 20, 20));
-		details.getChildren().add(desc);
 
 		details.setPrefSize(461, 600);
 

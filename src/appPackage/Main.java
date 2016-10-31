@@ -1,6 +1,7 @@
 package appPackage;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -29,7 +30,12 @@ public class Main extends Application{
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("JavaWatchlist");
         Group root = new Group();
-        Scene scene = new Scene(root, 500, 500, Color.WHITE);
+
+		Scene scene = new Scene(root, 500, 500, Color.WHITE);
+		File f = new File("style.css");
+		scene.getStylesheets().clear();
+		scene.getStylesheets().add("file:///" + f.getAbsolutePath().replace("\\", "/"));
+
         primaryStage.setWidth(1000);
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
