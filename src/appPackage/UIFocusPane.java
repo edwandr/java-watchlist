@@ -13,10 +13,9 @@ public class UIFocusPane extends BorderPane implements Observer {
 	    
 	    UIDynamicImage poster = new UIDynamicImage(tVShow);
 		poster.setPreserveRatio(true);
-	    poster.setFitWidth(370);
+		poster.setFitHeight(599);
 		BorderPane imageContainer = new BorderPane();
-		//TODO Make the padding match the background in color
-	    imageContainer.setPadding(new Insets(10, 10, 10, 10));
+	    imageContainer.setPadding(new Insets(0, 0, 1, 0)); // Insets(droite,haut,bas,gauche)
 	    imageContainer.setCenter(poster);
 	    
 	    this.setRight(imageContainer);

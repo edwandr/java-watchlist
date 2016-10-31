@@ -87,7 +87,7 @@ public class UIDetailPane extends ScrollPane {
 		VBox.setMargin(desc, new Insets(15, 0, 20, 20));
 		details.getChildren().add(desc);
 
-		details.setPrefSize(465, 600);
+		details.setPrefSize(461, 600);
 
 		this.setStyle("-fx-background-color:transparent;");
 		this.setFitToWidth(true);
