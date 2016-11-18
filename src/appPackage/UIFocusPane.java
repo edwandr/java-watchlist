@@ -25,7 +25,7 @@ public class UIFocusPane extends BorderPane implements Observer {
 		poster.setUpController();
 	    tVShow.fetchBigPoster();
 
-		if (User.isInFavorite(tVShow.getId())){
+		if (User.getUser().isInFavorite(tVShow.getId())){
 			UIFavoriteButton favButton = new UIFavoriteButton("Remove Favorite", Boolean.FALSE);
 			favButton.addObserver(this);
 			UIDetailPane details = new UIDetailPane(this.focusedShow, favButton);

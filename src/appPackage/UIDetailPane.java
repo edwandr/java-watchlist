@@ -55,7 +55,7 @@ public class UIDetailPane extends ScrollPane {
 		VBox.setMargin(favButton, new Insets(15, 0, 20, 20));
 		details.getChildren().add(favButton);
 
-		if (User.isInFavorite(tvshow.getId())) {
+		if (User.getUser().isInFavorite(tvshow.getId())) {
 
 			// Adding Episodes and Seasons
 			Text seasonTitle = new Text("Seasons");
@@ -106,11 +106,11 @@ public class UIDetailPane extends ScrollPane {
 			@Override
 			public void handle(ActionEvent e) {
 				if (favButton.getType() == Boolean.TRUE){
-					User.addFavorite(tvshow.getId());
+					User.getUser().addFavorite(tvshow.getId());
 					favButton.notifyObservers(favButton.getType());
 				}
 				else {
-					User.removeFavorite(tvshow.getId());
+					User.getUser().removeFavorite(tvshow.getId());
 					favButton.notifyObservers(favButton.getType());
 				}
 			}

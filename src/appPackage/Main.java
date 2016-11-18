@@ -44,8 +44,6 @@ public class Main extends Application{
         primaryStage.setHeight(680);
         primaryStage.setResizable(false);
 
-        User.loadUser();
-
         UIApplication application = new UIApplication(scene);
 		root.getChildren().add(application);
 
