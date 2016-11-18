@@ -7,15 +7,15 @@ import java.util.*;
 
 public class User{
 	
-	private static ArrayList<TVShow> favorite = new ArrayList<TVShow>();
-	private static String favoriteId;
+	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
+
 	
 	//TODO update model to use an instance of user
-	private User currentUser;
+	private static User currentUser;
 	
 	// Sauvegarder l'utilisateur à la fermeture 
-	public static void saveUser() {
-		favoriteId = "";
+	public void saveUser() {
+		String favoriteId = "";
 		Iterator<TVShow> it = favorite.iterator();
 		while (it.hasNext()) {
 			favoriteId += it.next().getId().toString() + ";";
@@ -31,7 +31,8 @@ public class User{
 		
 	}
 	// Récupérer l'utilisateur (ses favoris) à l'ouverture
-	public static void loadUser() {
+	public void loadUser() {
+		String favoriteId;
 	    try {
 	    	BufferedReader reader = new BufferedReader(new FileReader ("sauvegarde.txt"));
 		    String         line = null;
@@ -51,16 +52,12 @@ public class User{
 	    favoriteId = favoriteId.replaceAll("\n", "").replaceAll(" " ,"");
 		String[] favoriteArray = favoriteId.split("\\;",-1);
 		for (int i = 0 ; i < favoriteArray.length - 1; i++) {
-			favorite.add(TVShow.fetchFromID(Integer.parseInt(favoriteArray[i])));
+			this.favorite.add(TVShow.fetchFromID(Integer.parseInt(favoriteArray[i])));
 		}
 	}
 
-	/* TODO Bug Correction: Bug may arise if comparing TVShow whose attributes have not been fetched yet
-	 * Bug first appeared when no name was available, but may not be limited to that field only.
-	 */
-
 	// Renvoyer le tableau des favoris trié
-	public static ArrayList<TVShow> getFavorite(String sortType)
+	public ArrayList<TVShow> getFavorite(String sortType)
 	{
 		ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
 		if ( "alphabetical".equals(sortType) ) {
@@ -69,6 +66,9 @@ public class User{
 				public int compare(TVShow TVShow1, TVShow TVShow2) {
 					String name1 = TVShow1.getName();
 					String name2 = TVShow2.getName();
+					if (name1 == null || name2 == null){
+						return 0;
+					}
 					int result = name1.compareTo(name2);
 					return result;
 				}
@@ -80,10 +80,22 @@ public class User{
 				public int compare(TVShow TVShow1, TVShow TVShow2) {
 					Double popularity1 = TVShow1.getPopularity();
 					Double popularity2 = TVShow2.getPopularity();
+					if (popularity1 == null || popularity2 == null){
+						String name1 = TVShow1.getName();
+						String name2 = TVShow2.getName();
+						if (name1 == null || name2 == null){
+							return 0;
+						}
+						int result2 = name1.compareTo(name2);
+						return result2;
+					}
 					int result = popularity1.compareTo(popularity2);
 					if(result == 0){
 						String name1 = TVShow1.getName();
 						String name2 = TVShow2.getName();
+						if (name1 == null || name2 == null){
+							return 0;
+						}
 						int result2 = name1.compareTo(name2);
 						return result2;
 					}
@@ -103,6 +115,9 @@ public class User{
 						if (nextAiringTime2 == null){
 							String name1 = TVShow1.getName();
 							String name2 = TVShow2.getName();
+							if (name1 == null || name2 == null){
+								return 0;
+							}
 							int result2 = name1.compareTo(name2);
 							return result2;
 						}
@@ -131,7 +146,7 @@ public class User{
 		return favoriteClone;
 	}
 	
-	public User()
+	private User()
 	{
 		
 	}
@@ -147,7 +162,7 @@ public class User{
 		return description;
 	}
 	//Supprimer un favoris
-	public static void removeFavorite(Integer id)
+	public void removeFavorite(Integer id)
 	{
 		Iterator<TVShow> it = favorite.iterator();
         while (it.hasNext()) {
@@ -155,19 +170,19 @@ public class User{
                 it.remove();                
             }
         }
-        User.saveUser();
+        this.saveUser();
 	}
 	//Ajouter un favoris
-	public static void addFavorite(Integer id)
+	public void addFavorite(Integer id)
 	{
-		User.removeFavorite(id);
+		this.removeFavorite(id);
 		TVShow newFavorite = TVShow.fetchFromID(id);
 		favorite.add(newFavorite);	
-		User.saveUser();
+		this.saveUser();
 	}
 
 	//Test si la série est déjà dans favorites 
-	public static boolean isInFavorite(Integer id){
+	public boolean isInFavorite(Integer id){
 		boolean result = false ;
 		Iterator<TVShow> it = favorite.iterator();
         while (it.hasNext()) {
@@ -179,7 +194,13 @@ public class User{
 	}
 	
 	public ArrayList<TVShow> getFavoriteShows(){
-		return User.favorite;
+		return this.favorite;
 	}
-	
+	public static User getUser() {
+		if (currentUser == null){ 
+			currentUser = new User();
+			currentUser.loadUser();
+		}
+		return currentUser; 
+	}
 }

@@ -101,11 +101,11 @@ public class UIDetailPane extends ScrollPane {
 			@Override
 			public void handle(ActionEvent e) {
 				if (favButton.getType() == Boolean.TRUE){
-					User.addFavorite(tvshow.getId());
+					User.getUser().addFavorite(tvshow.getId());
 					favButton.notifyObservers(favButton.getType());
 				}
 				else {
-					User.removeFavorite(tvshow.getId());
+					User.getUser().removeFavorite(tvshow.getId());
 					favButton.notifyObservers(favButton.getType());
 				}
 			}
