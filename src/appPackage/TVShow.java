@@ -4,6 +4,7 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,16 +40,19 @@ public class TVShow{
 	//To notify when images are loaded
 	private List<Observer> observers = new ArrayList<Observer>();
 
-	private static ExecutorService tvShowThreadPool = Executors.newFixedThreadPool(8);
+	private static ExecutorService tvShowThreadPool = Executors.newFixedThreadPool(20);
 	private static Image noPosterImage = new Image("NoPoster.png");
+	
+	private static ConcurrentHashMap<Integer,TVShow> TVShowCache = new ConcurrentHashMap<Integer,TVShow>(50);
 	
 	public TVShow() {
 		
 	}
 
+	@Deprecated
 	public TVShow(Integer id){
 
-		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"?api_key="+Main.apiKey;
+		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"?api_key="+Main.getApiKey();
 		JSONObject json;
 		try{
 			json = Main.getJSONAtURL(url);
@@ -139,6 +143,7 @@ public class TVShow{
 		    }
 		};
 		
+		
 		tvShowThreadPool.execute(task);
 		
 	}
@@ -151,11 +156,26 @@ public class TVShow{
 		
 		Task<Void> task = new Task<Void>() {
 		    @Override protected Void call() throws Exception {
-				try {
-					//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
-					String sizeOption = "w500";
-					show.bigPoster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
-				} catch (Exception e) {return null;}
+		    	
+		    	//Waiting for the posterPath to be filled by the constructor but not indefinitely
+		    	int counter=0;
+		    	while(show.posterPath==null && counter<150){
+		    		Thread.sleep(100);
+		    		counter++;
+		    	}
+		    	if(counter==150) return null;
+		    	
+		    	//Dealing with shows that have no poster in the database
+		    	if(show.posterPath.length()<=1){
+		    		if(show.poster==null) show.poster=noPosterImage;
+		    		show.bigPoster=noPosterImage;
+		    		show.notifyObservers(show);
+		    		return null;
+		    	}
+		    	
+				//available size options include "w92", "w154", "w185", "w342", "w500", "w780" and "original"
+				String sizeOption = "w500";
+				show.bigPoster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
 				
 				show.notifyObservers(show);
 		    	return null;
@@ -176,7 +196,7 @@ public class TVShow{
 		JSONObject json;
 		if (lastSeason >= 0) {
 			url = "https://api.themoviedb.org/3/tv/" + this.id.toString()
-					+ "/season/" + lastSeason.toString() + "?api_key=" + Main.apiKey;
+					+ "/season/" + lastSeason.toString() + "?api_key=" + Main.getApiKey();
 			try {
 				json = Main.getJSONAtURL(url);
 			} catch (JSONException e) {
@@ -189,7 +209,7 @@ public class TVShow{
 				lastSeason -= 1;
 				if (lastSeason < 0) return;
 				url = "https://api.themoviedb.org/3/tv/" + this.id.toString()
-						+ "/season/" + lastSeason.toString() + "?api_key=" + Main.apiKey;
+						+ "/season/" + lastSeason.toString() + "?api_key=" + Main.getApiKey();
 				try {
 					json = Main.getJSONAtURL(url);
 				} catch (JSONException e) {
@@ -216,24 +236,47 @@ public class TVShow{
 		}
 	}
 	
+	public static TVShow fetchFromIDWithCache(Integer showID){
+		if(!TVShowCache.containsKey(showID)) TVShowCache.put(showID, fetchFromAPIWithID(showID, tvShowThreadPool) );
+		return TVShowCache.get(showID);
+	}
+	
 	public static TVShow fetchFromID(Integer showID){
-		return TVShow.fetchFromID(showID, tvShowThreadPool);
+		return fetchFromIDWithCache(showID);
+		//return fetchFromAPIWithID(showID, tvShowThreadPool);
 	}
 
-	//TODO Retry later if the API access was unsuccessful
-	public static TVShow fetchFromID(Integer showID, ExecutorService threadPool){
+	
+	private static TVShow fetchFromAPIWithID(Integer showID, ExecutorService threadPool){
 		TVShow result = new TVShow();
 		result.id=showID;
 
 		Task<Void> creatorTask = new Task<Void>() {
 		    @Override protected Void call() throws Exception {
 
-				String url = "https://api.themoviedb.org/3/tv/"+showID.toString()+"?api_key="+Main.apiKey;
-				JSONObject json;
-				try{
-					json = Main.getJSONAtURL(url);
-				}catch(JSONException e){return null;}
+				String url = "https://api.themoviedb.org/3/tv/"+showID.toString()+"?api_key="+Main.getApiKey();
+				JSONObject json = null;
 
+				int counter=0;
+				while(counter<50){
+					try{
+						json = Main.getJSONAtURL(url);
+					}catch(JSONException e){
+						
+					}
+					
+					if(json!=null) break;
+					Thread.sleep(500);
+					counter++;
+				}
+				
+				if(counter==50){
+					//Give up on loading the TVShow and fill in the fields with default information
+					result.name="[Name unavailable]";
+					result.poster=noPosterImage;
+					result.bigPoster=noPosterImage;
+					result.notifyObservers(result);
+				}
 				
 				if(result.name==null) result.name = json.optString("name", "[Name unavailable]");
 				result.nbEpisodes = json.optInt("number_of_episodes");
@@ -302,9 +345,8 @@ public class TVShow{
 
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
-		ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
-		String url = "https://api.themoviedb.org/3/tv/popular?api_key="+Main.apiKey;
+		String url = "https://api.themoviedb.org/3/tv/popular?api_key="+Main.getApiKey();
 		JSONObject json;
 		try{
 			json = Main.getJSONAtURL(url);
@@ -313,21 +355,19 @@ public class TVShow{
 		}
 
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			TVShow show = TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool);
+			TVShow show = TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"));
 			show.name = json.getJSONArray("results").getJSONObject(i).optString("name");
 			list.add(show);
 		}
 		
-		threadPool.shutdown();
 		return list;
 	}
 	
-	//TODO Deal with shows that have no posters (ex search "hello")
+	
 	public static ArrayList<TVShow> searchTVShows(String query){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
-		ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
-		String url = "https://api.themoviedb.org/3/search/tv?api_key="+Main.apiKey+"&query="+query;
+		String url = "https://api.themoviedb.org/3/search/tv?api_key="+Main.getApiKey()+"&query="+query;
 		JSONObject json;
 		try{
 			json = Main.getJSONAtURL(url);
@@ -336,12 +376,11 @@ public class TVShow{
 		}
 
 		for(int i=0;i<json.getJSONArray("results").length();i++){
-			TVShow show = TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"),threadPool);
+			TVShow show = TVShow.fetchFromID(json.getJSONArray("results").getJSONObject(i).optInt("id"));
 			show.name = json.getJSONArray("results").getJSONObject(i).optString("name");
 			list.add(show);
 		}
-
-		threadPool.shutdown();
+		
 		return list;
 	}
 
@@ -415,7 +454,7 @@ public class TVShow{
 	public Integer getVoteCount() {
 		return voteCount;
 	}
-
+	
 	public LocalDate getNextAiringTime() {
 		if(this.nextAiringTime==null){
 			this.fetchNextAiringTime();

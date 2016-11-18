@@ -18,7 +18,7 @@ public class TVSeason {
 	
 	public TVSeason(Integer id , Integer seasonNumber){
 		
-		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"/season/"+seasonNumber.toString()+"?api_key="+Main.apiKey+"&language=en-US";
+		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"/season/"+seasonNumber.toString()+"?api_key="+Main.getApiKey()+"&language=en-US";
 		JSONObject json;
 		try{
 			json = Main.getJSONAtURL(url);

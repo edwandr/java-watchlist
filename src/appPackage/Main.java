@@ -20,8 +20,12 @@ import javafx.stage.Stage;
 
 public class Main extends Application{
 
-	public static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
-
+	private static String apiKey = "0ad8c862866c0f99ff7ea5a58309fc13";
+	
+	public static String getApiKey(){
+		return apiKey;
+	}
+	
 	public static void main(String... args) {
 		Application.launch(args);
 	}

@@ -30,6 +30,7 @@ public class User{
 		}
 		
 	}
+	
 	// Récupérer l'utilisateur (ses favoris) à l'ouverture
 	public static void loadUser() {
 	    try {

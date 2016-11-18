@@ -16,6 +16,7 @@ import javafx.scene.layout.FlowPane;
 
 
 public class UIListPane extends ScrollPane {
+	
 	public UIListPane(ArrayList<TVShow> tvshows, UIApplication application, Scene scene, Boolean notification) {
 		FlowPane list = new FlowPane();
 		list.setPadding(new Insets(10, 10, 10, 10));
@@ -30,9 +31,9 @@ public class UIListPane extends ScrollPane {
 			TVShow show = it.next();
 			UIDynamicImage poster = new UIDynamicImage(show);
 			poster.setUpController();
-
+			
 			poster.addObserver(application);
-
+			
 			show.fetchPoster();
 			poster.setPreserveRatio(true);
 			poster.setFitWidth(185);
