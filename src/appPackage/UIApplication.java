@@ -25,7 +25,7 @@ public class UIApplication extends BorderPane implements Observer {
 	public void update(Boolean type){
 		if (type == Boolean.TRUE){
 			ArrayList<TVShow> list = TVShow.getPopularTVShows();
-			UIListPane newListPane = new UIListPane(list, this, this.scene, Boolean.TRUE);
+			UIListPane newListPane = new UIListPane(list, this, this.scene, Boolean.FALSE);
 			this.setCenter(newListPane);
 		}
 		else {

@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 
@@ -21,7 +22,7 @@ public class UIListPane extends ScrollPane {
 		FlowPane list = new FlowPane();
 		list.setPadding(new Insets(10, 10, 10, 10));
 		list.setVgap(20);
-		list.setHgap(20);
+		list.setHgap(3);
 		list.setPrefWrapLength(300);
 		list.setStyle("-fx-background-color: #efefef;");
 
@@ -42,10 +43,10 @@ public class UIListPane extends ScrollPane {
 			BorderPane container = new BorderPane();
 
 			if (notification==Boolean.TRUE && show.getNextEpisodeisSoon()==Boolean.TRUE) {
-				container.setCenter(new UINotification(poster));
+				container.setCenter(new UIPoster(poster, Boolean.TRUE));
 			}
 			else{
-				container.setCenter(poster);
+				container.setCenter(new UIPoster(poster, Boolean.FALSE));
 			}
 			Label title = new Label(show.getName());
 			title.setMaxWidth(180);
