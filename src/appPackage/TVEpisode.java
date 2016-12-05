@@ -15,6 +15,7 @@ public class TVEpisode {
 	
 
 	public TVEpisode(){}
+	
 	@Override
 	public String toString(){
 		String descriptionString = "";

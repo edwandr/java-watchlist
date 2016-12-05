@@ -5,15 +5,17 @@ import java.time.LocalDate;
 import java.util.*;
 
 
+
 public class User{
 	
 	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
 
 	
-	//TODO update model to use an instance of user
-	private static User currentUser;
-	
-	// Sauvegarder l'utilisateur à la fermeture 
+	private static User currentUser;	
+
+	/**
+	 * Save favorites 
+	 */
 	public void saveUser() {
 		String favoriteId = "";
 		Iterator<TVShow> it = favorite.iterator();
@@ -31,7 +33,9 @@ public class User{
 		
 	}
 	
-	// Récupérer l'utilisateur (ses favoris) à l'ouverture
+	/**
+	 * Load user and its favorites
+	 */
 	public void loadUser() {
 		String favoriteId;
 	    try {
@@ -57,7 +61,10 @@ public class User{
 		}
 	}
 
-	// Renvoyer le tableau des favoris trié
+	/**
+	 * @param sortType : "alphabetical", "popularity", "airingTime", "lastAdded"
+	 * @return sorted favorites array
+	 */
 	public ArrayList<TVShow> getFavorite(String sortType)
 	{
 		ArrayList<TVShow> favoriteClone = new ArrayList<TVShow>(favorite);
@@ -148,11 +155,13 @@ public class User{
 	}
 	
 	private User()
-	{
-		
+	{	
 	}
 	
-	// Donner une description des favoris
+
+	/**
+	 * @return description of favorites
+	 */
 	public String AllFavtoString()
 	{
 		String description = "Favorite TV Shows : \n \n";
@@ -162,7 +171,12 @@ public class User{
 	    }  
 		return description;
 	}
-	//Supprimer un favoris
+	
+	
+	/**
+	 * Remove one TVShow in favorites
+	 * @param id : TVShow id 
+	 */
 	public void removeFavorite(Integer id)
 	{
 		Iterator<TVShow> it = favorite.iterator();
@@ -173,7 +187,10 @@ public class User{
         }
         this.saveUser();
 	}
-	//Ajouter un favoris
+	/**
+	 * Add favorite
+	 * @param id : TVShow id
+	 */
 	public void addFavorite(Integer id)
 	{
 		this.removeFavorite(id);
@@ -182,7 +199,11 @@ public class User{
 		this.saveUser();
 	}
 
-	//Test si la série est déjà dans favorites 
+	
+	/**
+	 * @param id : TVShow id 
+	 * @return boolean if TVShow is in favorite or not
+	 */
 	public boolean isInFavorite(Integer id){
 		boolean result = false ;
 		Iterator<TVShow> it = favorite.iterator();
@@ -194,9 +215,16 @@ public class User{
 		return result;
 	}
 	
+	/**
+	 * @return favorite array
+	 */
 	public ArrayList<TVShow> getFavoriteShows(){
 		return this.favorite;
 	}
+	
+	/**
+	 * @return currentUser
+	 */
 	public static User getUser() {
 		if (currentUser == null){ 
 			currentUser = new User();
