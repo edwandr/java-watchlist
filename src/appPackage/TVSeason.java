@@ -13,9 +13,13 @@ public class TVSeason {
 	private Integer seasonNum;
 	private Integer seasonId;
 	private Integer episodeNum;
-
 	private ArrayList<TVEpisode> episodes = new ArrayList<TVEpisode>();
 	
+	/**
+	 * Create season of a TVShow with details of all episodes
+	 * @param id : TVShow id 
+	 * @param seasonNumber 
+	 */
 	public TVSeason(Integer id , Integer seasonNumber){
 		
 		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"/season/"+seasonNumber.toString()+"?api_key="+Main.getApiKey()+"&language=en-US";
@@ -31,7 +35,7 @@ public class TVSeason {
 		this.airDate = json.optString("air_date",defaultString);
 		this.seasonNum = seasonNumber;
 	
-		
+		// Create an instance of TVEpisode for each episode of the season 
 		for(int i=0;i<json.getJSONArray("episodes").length();i++){
 			TVEpisode newEpisode = new TVEpisode();
 			newEpisode.setEpisodeNum(Integer.parseInt(json.getJSONArray("episodes").getJSONObject(i).optString("episode_number")));
@@ -48,6 +52,7 @@ public class TVSeason {
 		
 	}
 	
+
 	@Override
 	public String toString(){
 		String descriptionString = "";
@@ -65,6 +70,7 @@ public class TVSeason {
 		descriptionString+= "-----------------------------------------\n";
 		return descriptionString;
 	}
+
 	public String getName() {
 		return name;
 	}
