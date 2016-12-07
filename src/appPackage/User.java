@@ -9,8 +9,6 @@ public class User{
 	
 	private ArrayList<TVShow> favorite = new ArrayList<TVShow>();
 
-	
-	//TODO update model to use an instance of user
 	private static User currentUser;
 	
 	// Sauvegarder l'utilisateur à la fermeture 

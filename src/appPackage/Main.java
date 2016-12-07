@@ -77,8 +77,7 @@ public class Main extends Application{
 		TVShow.shutdownThreadPoolNow();
 	}
 	
-	//TODO Optional: Make the calls with different keys to avoid lockup.
-	//TODO Optional: Put all of the API calling functions in a specific class
+	
 	static Integer numberOfAPICalls = new Integer(0);
 	
 	public static JSONObject getJSONAtURL(String myURL) throws JSONException {
