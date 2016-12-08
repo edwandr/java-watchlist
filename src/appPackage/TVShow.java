@@ -207,7 +207,7 @@ public class TVShow{
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
 		Integer lastSeason = null;
 		int counter=0;
-		while(lastSeason==null && counter<10){
+		while(lastSeason==null && counter<100){
 			lastSeason = this.nbSeasons;
     		try {
 				Thread.sleep(100);
