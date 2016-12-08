@@ -18,12 +18,17 @@ public class UIDynamicImage extends ImageView{
      * Allocates a new UIDynamicImage with default "Unavailable Image" image
      *
      * @param tvShow reference used for observers
+     * @see setUpController Ensures the image will change if it is loaded after initialization. 
+     * 
      */
 	public UIDynamicImage(TVShow tVShow){
 		super(defaultImage);
 		this.tVShow=tVShow;
 	}
 	
+    /**
+     * Allocates a controller to observe the TVShow and update the image when needed.
+     */
 	public void setUpController(){
 		//Setup your controller to observe any changes made to the show
 		//Note: This is outside the constructor to keep it streamlined
@@ -44,10 +49,6 @@ public class UIDynamicImage extends ImageView{
 
 	public List<Observer> getObservers() {
 		return observers;
-	}
-
-	public void setObservers(List<Observer> observers) {
-		this.observers = observers;
 	}
 
 	public TVShow getTVShow() {

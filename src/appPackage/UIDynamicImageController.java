@@ -24,13 +24,13 @@ public class UIDynamicImageController implements Observer{
 			image = UIDynamicImage.defaultImage;
 		}
 		
+		//Sets up a task to be performed on the FX thread
 		Task<Void> task = new Task<Void>() {
 		    @Override protected Void call() throws Exception {
 				imageView.setImage(image);
 				return null;
 		    }
 		};
-		
 		Platform.runLater(task);
 		
 	}

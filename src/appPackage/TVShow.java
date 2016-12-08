@@ -3,7 +3,7 @@ package appPackage;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,9 +33,11 @@ public class TVShow{
 	private Double voteAverage;
 	private Integer voteCount;
 	private ArrayList<TVSeason> seasons = new ArrayList<TVSeason>();
+	
+	private long timeOfCreation = System.currentTimeMillis(); 
 
 	private LocalDate nextAiringTime;
-	private Boolean nextEpisodeisSoon;
+	private Boolean nextEpisodeisSoon=Boolean.FALSE;
 	
 	//To notify when images are loaded
 	private List<Observer> observers = new ArrayList<Observer>();
@@ -43,13 +45,20 @@ public class TVShow{
 	private static ExecutorService tvShowThreadPool = Executors.newFixedThreadPool(20);
 	private static Image noPosterImage = new Image("NoPoster.png");
 	
+	private static Boolean withCacheService = Boolean.FALSE;
+	
 	private static ConcurrentHashMap<Integer,TVShow> TVShowCache = new ConcurrentHashMap<Integer,TVShow>(50);
 	
 	public TVShow() {
 		
 	}
 
-	@Deprecated
+	/**
+	 * Constructor of TVShow. Retrieves a TVShow from the API in a blocking way.  
+	 * @deprecated
+	 * @see fetchFromAPIWithID(Integer id)
+	 * @param id	ID of the show to retrieve from the API
+	 */
 	public TVShow(Integer id){
 
 		String url = "https://api.themoviedb.org/3/tv/"+id.toString()+"?api_key="+Main.getApiKey();
@@ -107,6 +116,9 @@ public class TVShow{
 		this.fetchNextAiringTime();
 	}
 
+	/**
+	 * Retrieves the small poster on a separate thread. 
+	 */
 	public void fetchPoster(){
 		if(this.poster!=null) return;
 		
@@ -134,10 +146,6 @@ public class TVShow{
 				String sizeOption = "w185";
 				show.poster = new Image("http://image.tmdb.org/t/p/"+sizeOption+show.posterPath);
 				
-				//TODO Parameter that simulate network lag with following function
-				//Random rng = new Random();
-				//Thread.sleep(rng.nextInt(1500));
-				
 				show.notifyObservers(show);
 		    	return null;
 		    }
@@ -148,6 +156,9 @@ public class TVShow{
 		
 	}
 	
+	/**
+	 * Retrieves the big poster on a separate thread.
+	 */
 	public void fetchBigPoster(){
 		if(this.bigPoster!=null) return;
 		
@@ -186,12 +197,25 @@ public class TVShow{
 		
 	}
 
-	//TODO Put the computation on a separate thread
-	//TODO Avoid an output error when the show was improperly fetched or API is inaccessible and retry later
+	/**
+	 * Retrieves the airing time of the next episode
+	 */
 	public void fetchNextAiringTime() {
+		
+		
 		//If the show is still in production, get the next airing time
 		//Is it exactly the same as the number of seasons ? Let's calculate it just to be sure
-		Integer lastSeason = this.nbSeasons;
+		Integer lastSeason = null;
+		int counter=0;
+		while(lastSeason==null && counter<10){
+			lastSeason = this.nbSeasons;
+    		try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+    		counter++;
+    	}
 		String url;
 		JSONObject json;
 		if (lastSeason >= 0) {
@@ -236,17 +260,37 @@ public class TVShow{
 		}
 	}
 	
-	public static TVShow fetchFromIDWithCache(Integer showID){
-		if(!TVShowCache.containsKey(showID)) TVShowCache.put(showID, fetchFromAPIWithID(showID, tvShowThreadPool) );
+	/**
+	 * When using the caching feature, this function will return the cached TVShow 
+	 * if available or ask for it to be fetched and put in the cache.
+	 * @param showID	ID of the show to retrieve from the API
+	 * @return Returns the TVShow as is, from the cache. 
+	 */
+	private static TVShow fetchFromIDWithCache(Integer showID){
+		if(!TVShowCache.containsKey(showID)){
+			TVShowCache.put(showID, fetchFromAPIWithID(showID, tvShowThreadPool) );
+		}
 		return TVShowCache.get(showID);
 	}
 	
+	/**
+	 * This function is the public function to retrieve a TVShow. It uses the caching function according if selected.
+	 * @param showID	ID of the show to retrieve from the API
+	 * @return The requested TVShow. At time of return, only the ID field is guaranteed to be filled out. 
+	 * All the others fields, except the poster images, will be automatically filled on a separate thread.
+	 */
 	public static TVShow fetchFromID(Integer showID){
-		return fetchFromIDWithCache(showID);
-		//return fetchFromAPIWithID(showID, tvShowThreadPool);
+		if(TVShow.withCacheService) return fetchFromIDWithCache(showID);
+		else 						return fetchFromAPIWithID(showID, tvShowThreadPool);
 	}
 
-	
+	/**
+	 * Retrieves the TVShow from the API
+	 * @param showID		ID of the show to retrieve from the API
+	 * @param threadPool	Allows for a specific ExecutorService to be used. 
+	 * @return The requested TVShow. At time of return, only the ID field is guaranteed to be filled out. 
+	 * @note All the others fields, except the poster images, will be automatically filled on a separate thread.
+	 */
 	private static TVShow fetchFromAPIWithID(Integer showID, ExecutorService threadPool){
 		TVShow result = new TVShow();
 		result.id=showID;
@@ -312,9 +356,6 @@ public class TVShow{
 					//Add a comma if it is not the last name of the array
 					if(i<json.getJSONArray("origin_country").length()-1) result.countryOfOrigin+=", ";
 				}
-
-				//Verbose
-				System.out.println(String.format("%-20s: text fields filled", result.name));
 				
 				return null;
 			}
@@ -342,7 +383,11 @@ public class TVShow{
 	public void setObservers(List<Observer> observers) {
 		this.observers = observers;
 	}
-
+	
+	/**
+	 * Returns a list of the 20 most popular TV shows according to the API. 
+	 * @return An ArrayList of TVShow with guarantee that the ID and names are filled in correctly. 
+	 */
 	public static ArrayList<TVShow> getPopularTVShows(){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
 
@@ -363,7 +408,10 @@ public class TVShow{
 		return list;
 	}
 	
-	
+	/**
+	 * Returns a list of the 20 TV shows matching the query 
+	 * @return An ArrayList of TVShow with guarantee that the ID and names are filled in correctly. 
+	 */
 	public static ArrayList<TVShow> searchTVShows(String query){
 		ArrayList<TVShow> list = new ArrayList<TVShow>();
 
@@ -383,7 +431,10 @@ public class TVShow{
 		
 		return list;
 	}
-
+	
+	/**
+	 * Returns a string description of the TVShow.
+	 */
 	@Override
 	public String toString(){
 		String descriptionString = "";
@@ -398,7 +449,34 @@ public class TVShow{
 		descriptionString+= "-----------------------------------------\n";
 		return descriptionString;
 	}
+	
+	/**
+	 * Starts a deamon thread that activates every 5 seconds to remove all 20-second old TVShows that are not favorited. 
+	 */
+	private static void startDeamonGarbageCollector(){
+		
+		Thread t = new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                	try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                    } 
+                	for (Map.Entry<Integer, TVShow> entry : TVShowCache.entrySet()) {
+                	    Integer id = entry.getKey();
+                	    TVShow show = entry.getValue();
+                	    if(User.getUser().isInFavorite(id)) continue;
+                	    if(System.currentTimeMillis()-show.timeOfCreation>20000) TVShowCache.remove(id);
+                	}
+                }
+            }
+        });
 
+        t.setDaemon(true);
+        t.start();
+        
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -476,6 +554,15 @@ public class TVShow{
 	
 	public static void shutdownThreadPoolNow(){
 		tvShowThreadPool.shutdownNow();
+	}
+	
+	public static void activateCaching(){
+		TVShow.withCacheService=Boolean.TRUE;
+		TVShow.startDeamonGarbageCollector();
+	}
+	
+	public long getTimeOfCreation() {
+		return timeOfCreation;
 	}
 	
 }

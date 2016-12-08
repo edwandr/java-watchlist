@@ -29,7 +29,7 @@ public class UIApplication extends BorderPane implements Observer {
 			this.setCenter(newListPane);
 		}
 		else {
-			UIListPane newListPane = new UIListPane(User.getUser().getFavorite("airingTime"), this, this.scene, Boolean.TRUE);
+			UIListPane newListPane = new UIListPane(User.getUser().getFavorite(), this, this.scene, Boolean.TRUE);
 			this.setCenter(newListPane);
 		}
 

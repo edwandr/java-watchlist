@@ -36,28 +36,40 @@ public class User{
 	 * Load user and its favorites
 	 */
 	public void loadUser() {
-		String favoriteId;
-	    try {
-	    	BufferedReader reader = new BufferedReader(new FileReader ("sauvegarde.txt"));
-		    String         line = null;
-		    StringBuilder  stringBuilder = new StringBuilder();
-		    String         ls = System.getProperty("line.separator");
-	        while((line = reader.readLine()) != null) {
-	            stringBuilder.append(line);
-	            stringBuilder.append(ls);
-	        }
-	        favoriteId = stringBuilder.toString();
-	        reader.close();
-	    } catch (IOException e) {
-			e.printStackTrace();
-			return;
-		} 
-	    
-	    favoriteId = favoriteId.replaceAll("\n", "").replaceAll(" " ,"");
-		String[] favoriteArray = favoriteId.split("\\;",-1);
-		for (int i = 0 ; i < favoriteArray.length - 1; i++) {
-			this.favorite.add(TVShow.fetchFromID(Integer.parseInt(favoriteArray[i])));
-		}
+		
+		Thread t = new Thread(new Runnable() {
+            public void run() {
+            	String favoriteId;
+        	    try {
+        	    	BufferedReader reader = new BufferedReader(new FileReader ("sauvegarde.txt"));
+        		    String         line = null;
+        		    StringBuilder  stringBuilder = new StringBuilder();
+        		    String         ls = System.getProperty("line.separator");
+        	        while((line = reader.readLine()) != null) {
+        	            stringBuilder.append(line);
+        	            stringBuilder.append(ls);
+        	        }
+        	        favoriteId = stringBuilder.toString();
+        	        reader.close();
+        	    } catch (IOException e) {
+        			e.printStackTrace();
+        			return;
+        		} 
+        	    
+        	    favoriteId = favoriteId.replaceAll("\n", "").replaceAll(" " ,"");
+        		String[] favoriteArray = favoriteId.split("\\;",-1);
+        		for (int i = 0 ; i < favoriteArray.length - 1; i++) {
+        			TVShow show = TVShow.fetchFromID(Integer.parseInt(favoriteArray[i]));
+        			User.getUser().addFavorite(show.getId());
+        		}
+        		Iterator<TVShow> it = favorite.iterator();
+        		while (it.hasNext()) {
+        			it.next().fetchNextAiringTime();
+        		}
+            }
+        });
+
+        t.start();
 	}
 
 	/**
@@ -153,6 +165,16 @@ public class User{
 		return favoriteClone;
 	}
 	
+	/**
+	 * @return unsorted favorites array
+	 */
+	public ArrayList<TVShow> getFavorite(){
+		return this.getFavorite("lastAdded");
+	}
+	
+	/**
+	 * Effectively makes all constructor private.
+	 */
 	private User()
 	{	
 	}

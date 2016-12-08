@@ -47,6 +47,10 @@ public class Main extends Application{
         UIApplication application = new UIApplication(scene);
 		root.getChildren().add(application);
 
+		User.getUser();
+		//Uses a cache to improve performance, can be disabled for testing
+		TVShow.activateCaching();
+		
 		ArrayList<UIDynamicLink> links = new ArrayList<>();
 		UIDynamicLink shows = new UIDynamicLink("Featured shows", "featured");
         shows.addObserver(application);
@@ -58,9 +62,7 @@ public class Main extends Application{
 		UIMenu menu = new UIMenu(links);
         application.setLeft(menu);
         
-		ArrayList<TVShow> tvshows = TVShow.getPopularTVShows();
-        UIListPane listPane = new UIListPane(tvshows, application, scene, Boolean.FALSE);
-        application.setCenter(listPane);
+        
             
         UISearchButton search = new UISearchButton("Search");
         search.addObserver(application);
